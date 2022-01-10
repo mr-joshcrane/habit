@@ -117,7 +117,6 @@ func NewPerson(opts ...Option) (Person, error) {
 			return Person{}, err
 		}
 	}
-	fmt.Println(p.Datastore)
 	if p.Datastore != nil {
 
 	}

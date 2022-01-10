@@ -4,6 +4,7 @@ import (
 	"habit"
 	"testing"
 	"time"
+	"io/ioutil"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -119,6 +120,41 @@ func TestGetHabit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected to get habit brush teeth but instead: %v", err)
 	}
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestWrite( t *testing.T) {
+	t.Parallel()
+	tempFile, err := ioutil.TempFile("", "*")
+	if err != nil {
+		t.Fatalf("unable to create temporary file, %t", err)
+	}
+	first, err := habit.NewPerson()
+	first.Datastore = tempFile
+	if err != nil {
+		t.Fatalf("unable to create new person, %t", err)
+	}
+	h, err := first.GetOrCreateHabit("meditate", 3)
+	if err != nil {
+		t.Fatalf("unable to create new habit, %t", err)
+	}
+	h.UpdateProceedure("sit down, meditate")
+	first.Write()
+
+	s := habit.OpenFilestore(tempFile.Name())
+	if err != nil {
+		t.Fatalf("unable to read temporary file, %t", err)
+	}
+	second, err  := habit.NewPerson(s)
+	if err != nil {
+		t.Fatalf("unable to create new person, %t", err)
+	}
+
+	want := first.Habits
+	got := second.Habits
+
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
