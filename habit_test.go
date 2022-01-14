@@ -47,14 +47,18 @@ func TestHabitPerformed(t *testing.T) {
 		Phase:     1,
 		Procedure: []string{},
 	}
-	time := time.Now()
-	got.RecordHabit(time)
+	now := time.Now()
+	testTime := func(x *time.Time) error {
+		*x = now
+		return nil
+	}
+	got.RecordHabit(testTime)
 
 	want := habit.Habit{
 		Name: "brush teeth",
 		History: []habit.HabitPerformed{
 			{
-				Date: time,
+				Date: now,
 			},
 		},
 		Phase:     1,
@@ -116,10 +120,7 @@ func TestGetHabit(t *testing.T) {
 		},
 	}
 
-	got, err := h.GetOrCreateHabit("brush teeth", 1)
-	if err != nil {
-		t.Fatalf("expected to get habit brush teeth but instead: %v", err)
-	}
+	got := h.GetOrCreateHabit("brush teeth", 1)
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
@@ -136,7 +137,7 @@ func TestWrite( t *testing.T) {
 	if err != nil {
 		t.Fatalf("unable to create new person, %t", err)
 	}
-	h, err := first.GetOrCreateHabit("meditate", 3)
+	h := first.GetOrCreateHabit("meditate", 3)
 	if err != nil {
 		t.Fatalf("unable to create new habit, %t", err)
 	}
