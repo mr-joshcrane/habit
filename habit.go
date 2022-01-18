@@ -136,7 +136,6 @@ func NewPerson(opts ...Option) (Person, error) {
 	return p, nil
 }
 
-
 func RunCLI() {
 	fset := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	file := fset.String("f", "store.json", "the name of the file store")
@@ -180,4 +179,27 @@ func RunCLI() {
 
 	habits := person.Display()
 	fmt.Fprintln(os.Stdout, habits)
+}
+
+type Store struct {
+	data map[string]int
+}
+
+func (s Store) HabitExists(name string) bool {
+	_, ok := s.data[name]
+	return ok
+}
+
+func (s *Store) PerformHabit(name string) {
+	s.data[name]++
+}
+
+func (s Store) TimesPerformed(name string) int {
+	return s.data[name]
+}
+
+func OpenStore(name string) (*Store, error) {
+	return &Store{
+		data: map[string]int{},
+	}, nil
 }

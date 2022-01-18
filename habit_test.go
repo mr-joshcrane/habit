@@ -2,12 +2,67 @@ package habit_test
 
 import (
 	"habit"
+	"io/ioutil"
 	"testing"
 	"time"
-	"io/ioutil"
 
 	"github.com/google/go-cmp/cmp"
 )
+
+func TestPerformNewHabit(t *testing.T) {
+	t.Parallel()
+	h := "piano"
+	s, err := habit.OpenStore(t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.HabitExists(h) {
+		t.Fatal("habit already exists")
+	}
+	s.PerformHabit(h)
+	if !s.HabitExists(h) {
+		t.Fatal("habit should exist, but doesn't")
+	}
+}
+
+func TestPerformExistingHabit(t *testing.T) {
+	t.Parallel()
+	h := "piano"
+	s, err := habit.OpenStore(t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.HabitExists(h) {
+		t.Fatal("habit should exist beforehand, but doesn't")
+	}
+	s.PerformHabit(h)
+	s.PerformHabit(h)
+	want := 2
+	got := s.TimesPerformed(h)
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestPersistStore(t *testing.T) {
+	t.Parallel()
+	h := "piano"
+	s, err := habit.OpenStore(t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.HabitExists(h) {
+		t.Fatal("habit already exists")
+	}
+	s.PerformHabit(h)
+	s2, err := habit.OpenStore(t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !s2.HabitExists(h) {
+		t.Fatal("habit should exist, but doesn't")
+	}
+}
 
 func TestCreateHabit(t *testing.T) {
 	t.Parallel()
@@ -126,7 +181,7 @@ func TestGetHabit(t *testing.T) {
 	}
 }
 
-func TestWrite( t *testing.T) {
+func TestWrite(t *testing.T) {
 	t.Parallel()
 	tempFile, err := ioutil.TempFile("", "*")
 	if err != nil {
@@ -148,7 +203,7 @@ func TestWrite( t *testing.T) {
 	if err != nil {
 		t.Fatalf("unable to read temporary file, %t", err)
 	}
-	second, err  := habit.NewPerson(s)
+	second, err := habit.NewPerson(s)
 	if err != nil {
 		t.Fatalf("unable to create new person, %t", err)
 	}
