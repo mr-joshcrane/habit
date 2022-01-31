@@ -2,9 +2,9 @@ package habit_test
 
 import (
 	"habit"
-	"io/ioutil"
+	// "io/ioutil"
 	"testing"
-	"time"
+	// "time"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -12,7 +12,11 @@ import (
 func TestPerformNewHabit(t *testing.T) {
 	t.Parallel()
 	h := "piano"
-	s, err := habit.OpenStore(t.Name())
+	path, err := habit.CreateTempFileStore(t.Name())
+	if err != nil {
+		t.Fatal()
+	}
+	s, err := habit.OpenStore(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,6 +24,9 @@ func TestPerformNewHabit(t *testing.T) {
 		t.Fatal("habit already exists")
 	}
 	s.PerformHabit(h)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !s.HabitExists(h) {
 		t.Fatal("habit should exist, but doesn't")
 	}
@@ -28,7 +35,11 @@ func TestPerformNewHabit(t *testing.T) {
 func TestPerformExistingHabit(t *testing.T) {
 	t.Parallel()
 	h := "piano"
-	s, err := habit.OpenStore(t.Name())
+	path, err := habit.CreateTempFileStore(t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := habit.OpenStore(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +58,11 @@ func TestPerformExistingHabit(t *testing.T) {
 func TestPersistStore(t *testing.T) {
 	t.Parallel()
 	h := "piano"
-	s, err := habit.OpenStore(t.Name())
+	path, err := habit.CreateTempFileStore(t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := habit.OpenStore(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +70,11 @@ func TestPersistStore(t *testing.T) {
 		t.Fatal("habit already exists")
 	}
 	s.PerformHabit(h)
-	s2, err := habit.OpenStore(t.Name())
+	err = s.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s2, err := habit.OpenStore(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,154 +83,156 @@ func TestPersistStore(t *testing.T) {
 	}
 }
 
-func TestCreateHabit(t *testing.T) {
-	t.Parallel()
-	got, err := habit.NewPerson()
-	if err != nil {
-		t.Fatal(err)
-	}
-	got.GetOrCreateHabit("brush teeth", 1)
-	got.GetOrCreateHabit("do pushups", 1)
 
-	want := habit.Person{
-		Habits: []habit.Habit{
-			{
-				Name:      "brush teeth",
-				History:   []habit.HabitPerformed{},
-				Phase:     1,
-				Procedure: []string{},
-			},
-			{
-				Name:      "do pushups",
-				History:   []habit.HabitPerformed{},
-				Phase:     1,
-				Procedure: []string{},
-			},
-		},
-	}
-	if !cmp.Equal(want, got) {
-		t.Error(cmp.Diff(want, got))
-	}
-}
 
-func TestHabitPerformed(t *testing.T) {
-	t.Parallel()
-	got := habit.Habit{
-		Name:      "brush teeth",
-		History:   []habit.HabitPerformed{},
-		Phase:     1,
-		Procedure: []string{},
-	}
-	now := time.Now()
-	testTime := func(x *time.Time) error {
-		*x = now
-		return nil
-	}
-	got.RecordHabit(testTime)
+// func TestCreateHabit(t *testing.T) {
+// 	t.Parallel()
+// 	got, err := habit.NewPerson()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	got.GetOrCreateHabit("brush teeth", 1)
+// 	got.GetOrCreateHabit("do pushups", 1)
 
-	want := habit.Habit{
-		Name: "brush teeth",
-		History: []habit.HabitPerformed{
-			{
-				Date: now,
-			},
-		},
-		Phase:     1,
-		Procedure: []string{},
-	}
-	if !cmp.Equal(want, got) {
-		t.Error(cmp.Diff(want, got))
-	}
-}
+// 	want := habit.Person{
+// 		Habits: []habit.Habit{
+// 			{
+// 				Name:      "brush teeth",
+// 				History:   []habit.HabitPerformed{},
+// 				Phase:     1,
+// 				Procedure: []string{},
+// 			},
+// 			{
+// 				Name:      "do pushups",
+// 				History:   []habit.HabitPerformed{},
+// 				Phase:     1,
+// 				Procedure: []string{},
+// 			},
+// 		},
+// 	}
+// 	if !cmp.Equal(want, got) {
+// 		t.Error(cmp.Diff(want, got))
+// 	}
+// }
 
-func TestProceedureUpdated(t *testing.T) {
-	t.Parallel()
-	h := habit.Habit{
-		Name:      "brush teeth",
-		History:   []habit.HabitPerformed{},
-		Phase:     1,
-		Procedure: []string{},
-	}
-	h.UpdateProceedure("go to bathroom, put toothpaste on toothbrush, brush evenly for at least 120 seconds")
+// func TestHabitPerformed(t *testing.T) {
+// 	t.Parallel()
+// 	got := habit.Habit{
+// 		Name:      "brush teeth",
+// 		History:   []habit.HabitPerformed{},
+// 		Phase:     1,
+// 		Procedure: []string{},
+// 	}
+// 	now := time.Now()
+// 	testTime := func(x *time.Time) error {
+// 		*x = now
+// 		return nil
+// 	}
+// 	got.RecordHabit(testTime)
 
-	want := []string{
-		"go to bathroom",
-		"put toothpaste on toothbrush",
-		"brush evenly for at least 120 seconds",
-	}
-	got := h.Procedure
+// 	want := habit.Habit{
+// 		Name: "brush teeth",
+// 		History: []habit.HabitPerformed{
+// 			{
+// 				Date: now,
+// 			},
+// 		},
+// 		Phase:     1,
+// 		Procedure: []string{},
+// 	}
+// 	if !cmp.Equal(want, got) {
+// 		t.Error(cmp.Diff(want, got))
+// 	}
+// }
 
-	if !cmp.Equal(want, got) {
-		t.Error(cmp.Diff(want, got))
-	}
-}
+// func TestProceedureUpdated(t *testing.T) {
+// 	t.Parallel()
+// 	h := habit.Habit{
+// 		Name:      "brush teeth",
+// 		History:   []habit.HabitPerformed{},
+// 		Phase:     1,
+// 		Procedure: []string{},
+// 	}
+// 	h.UpdateProceedure("go to bathroom, put toothpaste on toothbrush, brush evenly for at least 120 seconds")
 
-func TestGetHabit(t *testing.T) {
-	t.Parallel()
-	want := &habit.Habit{
-		Name:    "brush teeth",
-		History: []habit.HabitPerformed{},
-		Phase:   1,
-		Procedure: []string{
-			"go to bathroom",
-			"put toothpaste on toothbrush",
-			"brush evenly for at least 120 seconds",
-		},
-	}
-	otherHabit := &habit.Habit{
-		Name:    "go for run",
-		History: []habit.HabitPerformed{},
-		Phase:   1,
-		Procedure: []string{
-			"put on shoes",
-			"walk out door",
-			"run 5km",
-		},
-	}
-	h := habit.Person{
-		Habits: []habit.Habit{
-			*otherHabit,
-			*want,
-		},
-	}
+// 	want := []string{
+// 		"go to bathroom",
+// 		"put toothpaste on toothbrush",
+// 		"brush evenly for at least 120 seconds",
+// 	}
+// 	got := h.Procedure
 
-	got := h.GetOrCreateHabit("brush teeth", 1)
-	if !cmp.Equal(want, got) {
-		t.Error(cmp.Diff(want, got))
-	}
-}
+// 	if !cmp.Equal(want, got) {
+// 		t.Error(cmp.Diff(want, got))
+// 	}
+// }
 
-func TestWrite(t *testing.T) {
-	t.Parallel()
-	tempFile, err := ioutil.TempFile("", "*")
-	if err != nil {
-		t.Fatalf("unable to create temporary file, %t", err)
-	}
-	first, err := habit.NewPerson()
-	first.Datastore = tempFile
-	if err != nil {
-		t.Fatalf("unable to create new person, %t", err)
-	}
-	h := first.GetOrCreateHabit("meditate", 3)
-	if err != nil {
-		t.Fatalf("unable to create new habit, %t", err)
-	}
-	h.UpdateProceedure("sit down, meditate")
-	first.Write()
+// func TestGetHabit(t *testing.T) {
+// 	t.Parallel()
+// 	want := &habit.Habit{
+// 		Name:    "brush teeth",
+// 		History: []habit.HabitPerformed{},
+// 		Phase:   1,
+// 		Procedure: []string{
+// 			"go to bathroom",
+// 			"put toothpaste on toothbrush",
+// 			"brush evenly for at least 120 seconds",
+// 		},
+// 	}
+// 	otherHabit := &habit.Habit{
+// 		Name:    "go for run",
+// 		History: []habit.HabitPerformed{},
+// 		Phase:   1,
+// 		Procedure: []string{
+// 			"put on shoes",
+// 			"walk out door",
+// 			"run 5km",
+// 		},
+// 	}
+// 	h := habit.Person{
+// 		Habits: []habit.Habit{
+// 			*otherHabit,
+// 			*want,
+// 		},
+// 	}
 
-	s := habit.OpenFilestore(tempFile.Name())
-	if err != nil {
-		t.Fatalf("unable to read temporary file, %t", err)
-	}
-	second, err := habit.NewPerson(s)
-	if err != nil {
-		t.Fatalf("unable to create new person, %t", err)
-	}
+// 	got := h.GetOrCreateHabit("brush teeth", 1)
+// 	if !cmp.Equal(want, got) {
+// 		t.Error(cmp.Diff(want, got))
+// 	}
+// }
 
-	want := first.Habits
-	got := second.Habits
+// func TestWrite(t *testing.T) {
+// 	t.Parallel()
+// 	tempFile, err := ioutil.TempFile("", "*")
+// 	if err != nil {
+// 		t.Fatalf("unable to create temporary file, %t", err)
+// 	}
+// 	first, err := habit.NewPerson()
+// 	first.Datastore = tempFile
+// 	if err != nil {
+// 		t.Fatalf("unable to create new person, %t", err)
+// 	}
+// 	h := first.GetOrCreateHabit("meditate", 3)
+// 	if err != nil {
+// 		t.Fatalf("unable to create new habit, %t", err)
+// 	}
+// 	h.UpdateProceedure("sit down, meditate")
+// 	first.Write()
 
-	if !cmp.Equal(want, got) {
-		t.Error(cmp.Diff(want, got))
-	}
-}
+// 	s := habit.OpenFilestore(tempFile.Name())
+// 	if err != nil {
+// 		t.Fatalf("unable to read temporary file, %t", err)
+// 	}
+// 	second, err := habit.NewPerson(s)
+// 	if err != nil {
+// 		t.Fatalf("unable to create new person, %t", err)
+// 	}
+
+// 	want := first.Habits
+// 	got := second.Habits
+
+// 	if !cmp.Equal(want, got) {
+// 		t.Error(cmp.Diff(want, got))
+// 	}
+// }
