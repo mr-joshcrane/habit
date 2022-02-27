@@ -17,6 +17,8 @@ type Habit struct {
 	LastPerformed   time.Time
 }
 
+type TimeOption func() time.Time
+
 func NewTracker(store *JSONStore) *Tracker {
 	return &Tracker{
 		store: store,
@@ -27,10 +29,22 @@ func (t *Tracker) GetHabit(name string) (*Habit, bool) {
 	return t.store.GetHabit(name)
 }
 
-func (h *Habit) Perform() {
+func (h *Habit) performedPreviousDay(d time.Time) bool {
+	previousDay := d.AddDate(0, 0, -1)
+	return h.LastPerformed.Day() == previousDay.Day()
+}
+func (h *Habit) Perform(opts ...TimeOption) {
+	t := time.Now()
+	for _, opt := range opts {
+		t = opt()
+	}
 	h.Reps++
-	h.ConsecutiveReps++
-	h.LastPerformed = time.Now()
+	if h.performedPreviousDay(t) {
+		h.ConsecutiveReps++
+	} else {
+		h.ConsecutiveReps = 1
+	}
+	h.LastPerformed = t
 }
 
 func (h Habit) Streak() int {
