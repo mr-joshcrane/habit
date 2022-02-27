@@ -94,6 +94,8 @@ func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 
 	h.Perform(dayBeforeYesterday)
 	h.Perform(yesterday)
+	// duplicate performances on same day should not affect streak
+	h.Perform(yesterday)
 	h.Perform()
 
 	want := 3

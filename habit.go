@@ -33,6 +33,7 @@ func (h *Habit) performedPreviousDay(d time.Time) bool {
 	previousDay := d.AddDate(0, 0, -1)
 	return h.LastPerformed.Day() == previousDay.Day()
 }
+
 func (h *Habit) Perform(opts ...TimeOption) {
 	t := time.Now()
 	for _, opt := range opts {
@@ -42,7 +43,9 @@ func (h *Habit) Perform(opts ...TimeOption) {
 	if h.performedPreviousDay(t) {
 		h.ConsecutiveReps++
 	} else {
-		h.ConsecutiveReps = 1
+		if h.LastPerformed.Day() != t.Day() {
+			h.ConsecutiveReps = 1
+		}	
 	}
 	h.LastPerformed = t
 }
