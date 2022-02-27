@@ -1,9 +1,10 @@
 package habit
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"strings"
+	"time"
 )
 
 type Tracker struct {
@@ -11,7 +12,9 @@ type Tracker struct {
 }
 
 type Habit struct {
-	Reps int
+	Reps            int
+	ConsecutiveReps int
+	LastPerformed   time.Time
 }
 
 func NewTracker(store *JSONStore) *Tracker {
@@ -26,6 +29,12 @@ func (t *Tracker) GetHabit(name string) (*Habit, bool) {
 
 func (h *Habit) Perform() {
 	h.Reps++
+	h.ConsecutiveReps++
+	h.LastPerformed = time.Now()
+}
+
+func (h Habit) Streak() int {
+	return 0
 }
 
 func RunCLI() {
