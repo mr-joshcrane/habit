@@ -34,7 +34,7 @@ func (h *Habit) Perform() {
 }
 
 func (h Habit) Streak() int {
-	return 0
+	return h.ConsecutiveReps
 }
 
 func RunCLI() {

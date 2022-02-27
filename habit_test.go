@@ -52,6 +52,27 @@ func TestNewHabitIsStreakOfOne(t *testing.T) {
 	}
 }
 
+func TestHabitPerformedTwiceOnSameDayIsStreakOfOne(t *testing.T) {
+	t.Parallel()
+	path := t.TempDir() + "/" + t.Name()
+	s, err := habit.OpenJSONStore(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tracker := habit.NewTracker(s)
+	h, ok := tracker.GetHabit("piano")
+	if ok {
+		t.Fatal("habit should not, but it does")
+	}
+	h.Perform()
+	h.Perform()
+	want := 1
+	got := h.Streak()
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
 // func TestHabitPerformedOnNextDayIsStreakOfTwo(t *testing.T) {
 // 	t.Parallel()
 // 	path := t.TempDir() + "/" + t.Name()
