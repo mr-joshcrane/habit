@@ -74,6 +74,7 @@ func RunCLI() {
 		fmt.Fprintf(os.Stdout, "Well done, you started the new habit: %s!\n", habit)
 	} else {
 		fmt.Fprintf(os.Stdout, "Well done, you continued working on habit: %s!\n", habit)
+		fmt.Fprintf(os.Stdout, "You've been performing this for a streak of %d day(s)!\n", h.Streak())
 	}
 	t.store.Save()
 }
