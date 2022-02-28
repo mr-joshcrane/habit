@@ -62,7 +62,7 @@ func TestHabitPerformedTwiceOnSameDayIsStreakOfOne(t *testing.T) {
 	tracker := habit.NewTracker(s)
 	h, ok := tracker.GetHabit("piano")
 	if ok {
-		t.Fatal("habit should not, but it does")
+		t.Fatal("habit should not exist, but it does")
 	}
 	h.Perform()
 	h.Perform()
@@ -83,7 +83,7 @@ func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 	tracker := habit.NewTracker(s)
 	h, ok := tracker.GetHabit("piano")
 	if ok {
-		t.Fatal("habit should not, but it does")
+		t.Fatal("habit should not exist, but it does")
 	}
 	yesterday := func() time.Time {
 		return time.Now().AddDate(0, 0, -1)
