@@ -12,9 +12,8 @@ type Tracker struct {
 }
 
 type Habit struct {
-	Reps            int
-	ConsecutiveReps int
-	LastPerformed   time.Time
+	Streak        int
+	LastPerformed time.Time
 }
 
 type TimeOption func() time.Time
@@ -39,19 +38,10 @@ func (h *Habit) Perform(opts ...TimeOption) {
 	for _, opt := range opts {
 		t = opt()
 	}
-	h.Reps++
 	if h.performedPreviousDay(t) {
-		h.ConsecutiveReps++
-	} else {
-		if h.LastPerformed.Day() != t.Day() {
-			h.ConsecutiveReps = 1
-		}	
+		h.Streak++
 	}
 	h.LastPerformed = t
-}
-
-func (h Habit) Streak() int {
-	return h.ConsecutiveReps
 }
 
 func RunCLI() {
@@ -74,7 +64,7 @@ func RunCLI() {
 		fmt.Fprintf(os.Stdout, "Well done, you started the new habit: %s!\n", habit)
 	} else {
 		fmt.Fprintf(os.Stdout, "Well done, you continued working on habit: %s!\n", habit)
-		fmt.Fprintf(os.Stdout, "You've been performing this for a streak of %d day(s)!\n", h.Streak())
+		fmt.Fprintf(os.Stdout, "You've been performing this for a streak of %d day(s)!\n", h.Streak)
 	}
 	t.store.Save()
 }

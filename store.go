@@ -30,7 +30,7 @@ func (s JSONStore) GetHabit(name string) (*Habit, bool) {
 		return habit, true
 	}
 	h := &Habit{
-		Reps: 0,
+		Streak: 1,
 	}
 	s.data[name] = h
 	return h, false
