@@ -24,6 +24,8 @@ func NewTracker(store *JSONStore) *Tracker {
 	}
 }
 
+var Now = time.Now
+
 func (t *Tracker) GetHabit(name string) (*Habit, bool) {
 	return t.store.GetHabit(name)
 }
@@ -33,13 +35,12 @@ func (h *Habit) performedPreviousDay(d time.Time) bool {
 	return h.LastPerformed.Day() == previousDay.Day()
 }
 
-func (h *Habit) Perform(opts ...TimeOption) {
-	t := time.Now()
-	for _, opt := range opts {
-		t = opt()
-	}
+func (h *Habit) Perform() {
+	t := Now()
 	if h.performedPreviousDay(t) {
 		h.Streak++
+	} else if !h.LastPerformed.Equal(t) {
+		h.Streak = 1
 	}
 	h.LastPerformed = t
 }

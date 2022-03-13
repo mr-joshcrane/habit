@@ -20,6 +20,7 @@ func TestNewHabitPerformedHasAStreakOfOne(t *testing.T) {
 	if ok {
 		t.Fatal("habit should not, but it does")
 	}
+	habit.Now = monday
 	h.Perform()
 	want := 1
 	got := h.Streak
@@ -40,6 +41,7 @@ func TestPerformingAHabitTwiceOnTheSameDayDoesNotIncreaseStreak(t *testing.T) {
 	if ok {
 		t.Fatal("habit should not exist, but it does")
 	}
+	habit.Now = monday
 	h.Perform()
 	h.Perform()
 	want := 1
@@ -61,17 +63,14 @@ func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 	if ok {
 		t.Fatal("habit should not exist, but it does")
 	}
-	yesterday := func() time.Time {
-		return time.Now().AddDate(0, 0, -1)
-	}
-	dayBeforeYesterday := func() time.Time {
-		return time.Now().AddDate(0, 0, -2)
-	}
 
-	h.Perform(dayBeforeYesterday)
-	h.Perform(yesterday)
+	habit.Now = monday
+	h.Perform()
+	habit.Now = tuesday
+	h.Perform()
 	// duplicate performances on same day should not affect streak
-	h.Perform(yesterday)
+	h.Perform()
+	habit.Now = wednesday
 	h.Perform()
 
 	want := 3
@@ -93,10 +92,9 @@ func TestMissingADayResetsStreak(t *testing.T) {
 	if ok {
 		t.Fatal("habit should not exist, but it does")
 	}
-	dayBeforeYesterday := func() time.Time {
-		return time.Now().AddDate(0, 0, -2)
-	}
-	h.Perform(dayBeforeYesterday)
+	h.Streak = 100
+	h.LastPerformed = monday()
+	habit.Now = wednesday
 	h.Perform()
 
 	want := 1
@@ -104,4 +102,16 @@ func TestMissingADayResetsStreak(t *testing.T) {
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
+}
+
+func monday() time.Time {
+	return time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC)
+}
+
+func tuesday() time.Time {
+	return time.Date(2020, time.April, 24, 0, 0, 0, 0, time.UTC)
+}
+
+func wednesday() time.Time {
+	return time.Date(2020, time.April, 25, 0, 0, 0, 0, time.UTC)
 }
