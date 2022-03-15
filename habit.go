@@ -8,7 +8,7 @@ import (
 )
 
 type Tracker struct {
-	store *JSONStore
+	store *Store
 }
 
 type Habit struct {
@@ -18,7 +18,7 @@ type Habit struct {
 
 type TimeOption func() time.Time
 
-func NewTracker(store *JSONStore) *Tracker {
+func NewTracker(store *Store) *Tracker {
 	return &Tracker{
 		store: store,
 	}

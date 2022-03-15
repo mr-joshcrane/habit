@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package = "./habitpb";
+
+message Habits {
+    message Habit {
+        string Name = 1;
+        int32 streak = 2;
+        int64 last_performed = 3;
+    }
+    repeated Habit Habits = 1;
+}

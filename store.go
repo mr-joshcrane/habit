@@ -1,18 +1,22 @@
 package habit
 
 import (
-	"encoding/json"
+	"habit/proto/habitpb"
 	"io"
 	"os"
+	"time"
+
+	"github.com/golang/protobuf/proto"
 )
 
-type JSONStore struct {
+type Store struct {
 	data map[string]*Habit
 	path string
 }
 
-func (s *JSONStore) Save() error {
-	data, err := json.Marshal(s.data)
+func (s *Store) Save() error {
+	p := s.ToProto()
+	data, err := proto.Marshal(p)
 	if err != nil {
 		return err
 	}
@@ -24,7 +28,7 @@ func (s *JSONStore) Save() error {
 	return err
 }
 
-func (s JSONStore) GetHabit(name string) (*Habit, bool) {
+func (s Store) GetHabit(name string) (*Habit, bool) {
 	habit, ok := s.data[name]
 	if ok {
 		return habit, true
@@ -36,11 +40,12 @@ func (s JSONStore) GetHabit(name string) (*Habit, bool) {
 	return h, false
 }
 
-func OpenJSONStore(path string) (*JSONStore, error) {
+func OpenJSONStore(path string) (*Store, error) {
 	data := map[string]*Habit{}
+	data2 := habitpb.Habits{}
 	_, err := os.Stat(path)
 	if err != nil {
-		return &JSONStore{
+		return &Store{
 			data: map[string]*Habit{},
 			path: path,
 		}, nil
@@ -53,12 +58,39 @@ func OpenJSONStore(path string) (*JSONStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(contents, &data)
+	err = proto.Unmarshal(contents, &data2)
 	if err != nil {
 		return nil, err
 	}
-	return &JSONStore{
+	habits := data2.GetHabits()
+	for _, v := range habits {
+		name := v.GetName()
+		streak := int(v.GetStreak())
+		lastPerformed := v.GetLastPerformed()
+		data[name] = &Habit{
+			Streak: streak,
+			LastPerformed: time.Unix(lastPerformed,0),			
+		}
+	}
+	return &Store{
 		data: data,
 		path: path,
 	}, nil
+}
+
+func (s Store) ToProto() *habitpb.Habits {
+	habits := []*habitpb.Habits_Habit{}
+	for k, v := range s.data {
+		habit := habitpb.Habits_Habit{
+			Name: k,
+			Streak: int32(v.Streak),
+			LastPerformed: v.LastPerformed.Unix(),
+		}
+		habits = append(habits, &habit)
+	}
+	
+	h := habitpb.Habits{
+		Habits: habits,
+	}
+	return &h
 }
