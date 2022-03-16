@@ -28,3 +28,10 @@ Well done, you did the piano habit! Keep it up!
 ## Possible
 
 * "Phase of the day"?
+
+
+* Protobuf & gRPC
+
+
+Habit battle with friend
+Bragging rights

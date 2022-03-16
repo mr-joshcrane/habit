@@ -1,6 +1,7 @@
-package habit
+package pbfilestore
 
 import (
+	"habit"
 	"habit/proto/habitpb"
 	"io"
 	"os"
@@ -9,12 +10,12 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type Store struct {
-	data map[string]*Habit
+type PBFileStore struct {
+	data map[string]*habit.Habit
 	path string
 }
 
-func (s *Store) Save() error {
+func (s *PBFileStore) UpdateHabit(*habit.Habit) error {
 	p := s.ToProto()
 	data, err := proto.Marshal(p)
 	if err != nil {
@@ -28,25 +29,25 @@ func (s *Store) Save() error {
 	return err
 }
 
-func (s Store) GetHabit(name string) (*Habit, bool) {
-	habit, ok := s.data[name]
+func (s PBFileStore) GetHabit(name string) (*habit.Habit, bool) {
+	h, ok := s.data[name]
 	if ok {
-		return habit, true
+		return h, true
 	}
-	h := &Habit{
+	h = &habit.Habit{
 		Streak: 1,
 	}
 	s.data[name] = h
 	return h, false
 }
 
-func OpenJSONStore(path string) (*Store, error) {
-	data := map[string]*Habit{}
+func Open(path string) (*PBFileStore, error) {
+	data := map[string]*habit.Habit{}
 	data2 := habitpb.Habits{}
 	_, err := os.Stat(path)
 	if err != nil {
-		return &Store{
-			data: map[string]*Habit{},
+		return &PBFileStore{
+			data: map[string]*habit.Habit{},
 			path: path,
 		}, nil
 	}
@@ -62,35 +63,31 @@ func OpenJSONStore(path string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	habits := data2.GetHabits()
-	for _, v := range habits {
-		name := v.GetName()
+	habits := data2.GetStore()
+	for k, v := range habits {
+		name := k
 		streak := int(v.GetStreak())
 		lastPerformed := v.GetLastPerformed()
-		data[name] = &Habit{
+		data[name] = &habit.Habit{
 			Streak: streak,
 			LastPerformed: time.Unix(lastPerformed,0),			
 		}
 	}
-	return &Store{
+	return &PBFileStore{
 		data: data,
 		path: path,
 	}, nil
 }
 
-func (s Store) ToProto() *habitpb.Habits {
-	habits := []*habitpb.Habits_Habit{}
+func (s PBFileStore) ToProto() *habitpb.Habits {
+	h := habitpb.Habits{}
+	h.Store = make(map[string]*habitpb.Habits_Habit)
+	
 	for k, v := range s.data {
-		habit := habitpb.Habits_Habit{
-			Name: k,
+		h.Store[k] = &habitpb.Habits_Habit{
 			Streak: int32(v.Streak),
 			LastPerformed: v.LastPerformed.Unix(),
 		}
-		habits = append(habits, &habit)
-	}
-	
-	h := habitpb.Habits{
-		Habits: habits,
 	}
 	return &h
 }

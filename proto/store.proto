@@ -4,9 +4,9 @@ option go_package = "./habitpb";
 
 message Habits {
     message Habit {
-        string Name = 1;
-        int32 streak = 2;
-        int64 last_performed = 3;
+        int32 streak = 1;
+        int64 last_performed = 2;
     }
-    repeated Habit Habits = 1;
+    map<string, Habit> store = 1;
 }
+

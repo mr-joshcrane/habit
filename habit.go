@@ -7,8 +7,13 @@ import (
 	"time"
 )
 
+type Store interface {
+	GetHabit(string) (*Habit, bool) 
+	UpdateHabit(*Habit) error
+}
+
 type Tracker struct {
-	store *Store
+	store Store
 }
 
 type Habit struct {
@@ -18,7 +23,7 @@ type Habit struct {
 
 type TimeOption func() time.Time
 
-func NewTracker(store *Store) *Tracker {
+func NewTracker(store Store) *Tracker {
 	return &Tracker{
 		store: store,
 	}
@@ -45,17 +50,11 @@ func (h *Habit) Perform() {
 	h.LastPerformed = t
 }
 
-func RunCLI() {
+func RunCLI(s Store) {
 	args := os.Args[1:]
 	if len(args) == 0 {
 		fmt.Fprintf(os.Stdout, "Pass the name of the habit you performed today\nExample: %s played violin\n", os.Args[0])
 		os.Exit(0)
-	}
-	defaultPath := "habit.json"
-	s, err := OpenJSONStore(defaultPath)
-	if err != nil {
-		fmt.Fprint(os.Stderr, err)
-		os.Exit(1)
 	}
 	t := NewTracker(s)
 	habit := strings.Join(args, " ")
@@ -67,5 +66,5 @@ func RunCLI() {
 		fmt.Fprintf(os.Stdout, "Well done, you continued working on habit: %s!\n", habit)
 		fmt.Fprintf(os.Stdout, "You've been performing this for a streak of %d day(s)!\n", h.Streak)
 	}
-	t.store.Save()
+	t.store.UpdateHabit(h)
 }

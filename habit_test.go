@@ -2,6 +2,7 @@ package habit_test
 
 import (
 	"habit"
+	"habit/stores/pbfilestore"
 	"testing"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 func TestNewHabitPerformedHasAStreakOfOne(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
-	s, err := habit.OpenJSONStore(path)
+	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +33,7 @@ func TestNewHabitPerformedHasAStreakOfOne(t *testing.T) {
 func TestPerformingAHabitTwiceOnTheSameDayDoesNotIncreaseStreak(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
-	s, err := habit.OpenJSONStore(path)
+	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +55,7 @@ func TestPerformingAHabitTwiceOnTheSameDayDoesNotIncreaseStreak(t *testing.T) {
 func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
-	s, err := habit.OpenJSONStore(path)
+	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +84,7 @@ func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 func TestMissingADayResetsStreak(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
-	s, err := habit.OpenJSONStore(path)
+	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,3 +116,10 @@ func tuesday() time.Time {
 func wednesday() time.Time {
 	return time.Date(2020, time.April, 25, 0, 0, 0, 0, time.UTC)
 }
+
+// Testing network store
+
+// Contract for a store, for things where we dont care how, its in habit
+
+// Implimentation tests concrete gotchya pbfilestore 
+
