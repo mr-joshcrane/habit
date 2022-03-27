@@ -67,6 +67,99 @@ func (x *Habits) GetStore() map[string]*Habits_Habit {
 	return nil
 }
 
+type UpdateHabitsResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Success bool   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+}
+
+func (x *UpdateHabitsResponse) Reset() {
+	*x = UpdateHabitsResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_store_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateHabitsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateHabitsResponse) ProtoMessage() {}
+
+func (x *UpdateHabitsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_store_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateHabitsResponse.ProtoReflect.Descriptor instead.
+func (*UpdateHabitsResponse) Descriptor() ([]byte, []int) {
+	return file_store_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *UpdateHabitsResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *UpdateHabitsResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type Empty struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Empty) Reset() {
+	*x = Empty{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_store_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Empty) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Empty) ProtoMessage() {}
+
+func (x *Empty) ProtoReflect() protoreflect.Message {
+	mi := &file_store_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
+	return file_store_proto_rawDescGZIP(), []int{2}
+}
+
 type Habits_Habit struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -79,7 +172,7 @@ type Habits_Habit struct {
 func (x *Habits_Habit) Reset() {
 	*x = Habits_Habit{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_store_proto_msgTypes[1]
+		mi := &file_store_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -92,7 +185,7 @@ func (x *Habits_Habit) String() string {
 func (*Habits_Habit) ProtoMessage() {}
 
 func (x *Habits_Habit) ProtoReflect() protoreflect.Message {
-	mi := &file_store_proto_msgTypes[1]
+	mi := &file_store_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -138,8 +231,19 @@ var file_store_proto_rawDesc = []byte{
 	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x23, 0x0a, 0x05, 0x76, 0x61,
 	0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x48, 0x61, 0x62, 0x69,
 	0x74, 0x73, 0x2e, 0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a,
-	0x02, 0x38, 0x01, 0x42, 0x0b, 0x5a, 0x09, 0x2e, 0x2f, 0x68, 0x61, 0x62, 0x69, 0x74, 0x70, 0x62,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x02, 0x38, 0x01, 0x22, 0x4a, 0x0a, 0x14, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x48, 0x61, 0x62,
+	0x69, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73,
+	0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75,
+	0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22,
+	0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x32, 0x5f, 0x0a, 0x0c, 0x48, 0x61, 0x62, 0x69,
+	0x74, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x1d, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x48,
+	0x61, 0x62, 0x69, 0x74, 0x12, 0x06, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x07, 0x2e, 0x48,
+	0x61, 0x62, 0x69, 0x74, 0x73, 0x22, 0x00, 0x12, 0x30, 0x0a, 0x0c, 0x55, 0x70, 0x64, 0x61, 0x74,
+	0x65, 0x48, 0x61, 0x62, 0x69, 0x74, 0x73, 0x12, 0x07, 0x2e, 0x48, 0x61, 0x62, 0x69, 0x74, 0x73,
+	0x1a, 0x15, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x48, 0x61, 0x62, 0x69, 0x74, 0x73, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x0b, 0x5a, 0x09, 0x2e, 0x2f, 0x68,
+	0x61, 0x62, 0x69, 0x74, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -154,17 +258,23 @@ func file_store_proto_rawDescGZIP() []byte {
 	return file_store_proto_rawDescData
 }
 
-var file_store_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_store_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_store_proto_goTypes = []interface{}{
-	(*Habits)(nil),       // 0: Habits
-	(*Habits_Habit)(nil), // 1: Habits.Habit
-	nil,                  // 2: Habits.StoreEntry
+	(*Habits)(nil),               // 0: Habits
+	(*UpdateHabitsResponse)(nil), // 1: UpdateHabitsResponse
+	(*Empty)(nil),                // 2: Empty
+	(*Habits_Habit)(nil),         // 3: Habits.Habit
+	nil,                          // 4: Habits.StoreEntry
 }
 var file_store_proto_depIdxs = []int32{
-	2, // 0: Habits.store:type_name -> Habits.StoreEntry
-	1, // 1: Habits.StoreEntry.value:type_name -> Habits.Habit
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
+	4, // 0: Habits.store:type_name -> Habits.StoreEntry
+	3, // 1: Habits.StoreEntry.value:type_name -> Habits.Habit
+	2, // 2: HabitService.GetHabit:input_type -> Empty
+	0, // 3: HabitService.UpdateHabits:input_type -> Habits
+	0, // 4: HabitService.GetHabit:output_type -> Habits
+	1, // 5: HabitService.UpdateHabits:output_type -> UpdateHabitsResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -189,6 +299,30 @@ func file_store_proto_init() {
 			}
 		}
 		file_store_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateHabitsResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_store_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Empty); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_store_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Habits_Habit); i {
 			case 0:
 				return &v.state
@@ -207,9 +341,9 @@ func file_store_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_store_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_store_proto_goTypes,
 		DependencyIndexes: file_store_proto_depIdxs,

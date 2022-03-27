@@ -10,3 +10,14 @@ message Habits {
     map<string, Habit> store = 1;
 }
 
+message UpdateHabitsResponse {
+    bool success = 1;
+    string message = 2;
+};
+
+message Empty {}
+
+service HabitService {
+    rpc GetHabit(Empty) returns (Habits) {};
+    rpc UpdateHabits(Habits) returns (UpdateHabitsResponse) {};
+}
