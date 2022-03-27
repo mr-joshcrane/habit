@@ -66,5 +66,9 @@ func RunCLI(s Store) {
 		fmt.Fprintf(os.Stdout, "Well done, you continued working on habit: %s!\n", habit)
 		fmt.Fprintf(os.Stdout, "You've been performing this for a streak of %d day(s)!\n", h.Streak)
 	}
-	t.store.UpdateHabit(h)
+	err := t.store.UpdateHabit(h)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		os.Exit(1)
+	}
 }
