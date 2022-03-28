@@ -15,9 +15,13 @@ type PBFileStore struct {
 	path string
 }
 
-func (s *PBFileStore) UpdateHabit(*habit.Habit) error {
-	p := s.ToProto()
-	data, err := proto.Marshal(p)
+func (s *PBFileStore) UpdateHabit(h *habit.Habit) error {
+	s.data[h.HabitName] = &habit.Habit{
+		Streak: h.Streak,
+		LastPerformed: h.LastPerformed,
+		HabitName: h.HabitName,
+	}
+	data, err := proto.Marshal(s.ToProto())
 	if err != nil {
 		return err
 	}
@@ -63,7 +67,7 @@ func Open(path string) (*PBFileStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	habits := data2.GetStore()
+	habits := data2.Habits
 	for k, v := range habits {
 		name := k
 		streak := int(v.GetStreak())
@@ -80,14 +84,16 @@ func Open(path string) (*PBFileStore, error) {
 }
 
 func (s PBFileStore) ToProto() *habitpb.Habits {
-	h := habitpb.Habits{}
-	h.Store = make(map[string]*habitpb.Habits_Habit)
+	h := map[string]*habitpb.Habit{}
 	
 	for k, v := range s.data {
-		h.Store[k] = &habitpb.Habits_Habit{
+		h[k] = &habitpb.Habit{
 			Streak: int32(v.Streak),
 			LastPerformed: v.LastPerformed.Unix(),
+			HabitName: k,
 		}
 	}
-	return &h
+	return &habitpb.Habits{
+		Habits: h,
+	}
 }
