@@ -8,7 +8,7 @@ import (
 )
 
 type Store interface {
-	GetHabit(string) (*Habit, bool) 
+	GetHabit(string) (*Habit, bool)
 	UpdateHabit(*Habit) error
 }
 
@@ -17,6 +17,7 @@ type Tracker struct {
 }
 
 type Habit struct {
+	HabitName	  string
 	Streak        int
 	LastPerformed time.Time
 }
