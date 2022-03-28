@@ -3,6 +3,7 @@ package networkstore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"habit"
 	"habit/proto/habitpb"
 	"log"
@@ -13,10 +14,9 @@ import (
 )
 
 type NetworkStore struct {
-	data map[string]*habit.Habit
+	conn *grpc.ClientConn
 	client habitpb.HabitServiceClient
 }
-
 
 func Open(path string) (*NetworkStore, error) {
 	insecure := grpc.WithTransportCredentials(insecure.NewCredentials())
@@ -27,56 +27,57 @@ func Open(path string) (*NetworkStore, error) {
 		log.Fatalf("fail to dial: %v", err)
 		return nil, err
 	}
-	defer conn.Close()
 	client := habitpb.NewHabitServiceClient(conn)
-	habits, err := client.GetHabit(context.TODO(), &habitpb.Empty{})
 	if err != nil {
 		return nil, err
 	}
-	data := map[string]*habit.Habit{}
-	for k, v := range habits.Store {
-		data[k] = &habit.Habit{
-			LastPerformed: time.Unix(v.LastPerformed, 0),
-			Streak: int(v.Streak),
-		}
-	}
 
 	return &NetworkStore{
-		data: data,
 		client: client,
 	}, nil
 }
 
+func (s *NetworkStore) Close() {
+	s.conn.Close()
+}
+
 func (s *NetworkStore) UpdateHabit(habit *habit.Habit) error {
-	data := map[string]*habitpb.Habits_Habit{}
-	for k, v := range s.data {
-		data[k] = &habitpb.Habits_Habit{
-			Streak: int32(v.Streak),
-			LastPerformed: v.LastPerformed.Unix(),
-		}
+	h := &habitpb.Habit{
+		HabitName: habit.HabitName,
+		Streak: int32(habit.Streak),
+		LastPerformed: habit.LastPerformed.Unix(),
 	}
-	store := habitpb.Habits{
-		Store: data,
+	req := habitpb.UpdateHabitRequest{
+		Habit: h,
 	}
-	response, err := s.client.UpdateHabits(context.TODO(), &store)
+	response, err := s.client.UpdateHabit(context.TODO(), &req)
 	if err != nil {
 		return err
 	}
-	if !response.Success {
+	if !response.Ok {
 		return errors.New(response.Message)
 	}
-
 	return nil
 }
 
 func (s NetworkStore) GetHabit(name string) (*habit.Habit, bool) {
-	h, ok := s.data[name]
-	if ok {
-		return h, true
+	req := habitpb.GetHabitRequest{
+		Habitname: name,
 	}
-	h = &habit.Habit{
-		Streak: 1,
+	h, err := s.client.GetHabit(context.TODO(), &req)
+	if err != nil {
+		fmt.Println(err)
 	}
-	s.data[name] = h
-	return h, false
+	if !h.GetOk() {
+		return &habit.Habit{
+			HabitName: name,
+			Streak: 1,
+			LastPerformed: time.Now(),
+		}, false
+	}
+
+	return &habit.Habit{
+		Streak: int(h.Habit.GetStreak()),
+		LastPerformed: time.Unix(h.Habit.GetLastPerformed(), 0),
+	}, h.GetOk()
 }
