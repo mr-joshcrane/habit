@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	// "habit"
 	"habit/proto/habitpb"
 	"log"
 	"net"
@@ -10,23 +11,32 @@ import (
 	"google.golang.org/grpc"
 )
 
-var database = map[string]*habitpb.Habits_Habit{}
+var database = map[string]*habitpb.Habit{}
 
-type HabitServer struct {
+type HabitService struct {
   habitpb.UnimplementedHabitServiceServer
 }
 
-func (s *HabitServer) GetHabit(ctx context.Context, Empty *habitpb.Empty) (*habitpb.Habits, error) {
-	return &habitpb.Habits{
-		Store: database,
+func (s *HabitService) GetHabit(ctx context.Context, req *habitpb.GetHabitRequest) (*habitpb.GetHabitResponse, error) {
+	h, ok := database[req.Habitname]
+	if ok {
+		return &habitpb.GetHabitResponse{
+			Habit: h,
+			Ok: true,
+		}, nil
+	}
+	return &habitpb.GetHabitResponse{
+		Habit: nil,
+		Ok: false,
 	}, nil
 }
 
-func (s *HabitServer) UpdateHabits(ctx context.Context, Habit *habitpb.Habits) (*habitpb.UpdateHabitsResponse, error) {
-	database = Habit.Store
+func (s *HabitService) UpdateHabit(ctx context.Context, h *habitpb.UpdateHabitRequest) (*habitpb.UpdateHabitResponse, error) {
+	fmt.Println(h)
+	database[h.Habit.GetHabitName()] = h.Habit
 	fmt.Println(database)
-	return &habitpb.UpdateHabitsResponse{
-		Success: true,
+	return &habitpb.UpdateHabitResponse{
+		Ok: true,
 		Message: "Store updated successfully",
 	}, nil
 }
@@ -39,7 +49,7 @@ func main() {
 	}
 
 	grpc := grpc.NewServer()
-	s := &HabitServer{}
+	s := &HabitService{}
 	habitpb.RegisterHabitServiceServer(grpc, s)
 	grpc.Serve(lis)
 }
