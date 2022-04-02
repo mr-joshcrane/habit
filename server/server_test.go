@@ -29,7 +29,24 @@ func TestUpdateHabitReturnsErrorForHabitWithNoName(t *testing.T) {
 	}
 	err = s.UpdateHabit(input)
 	if err == nil {
-		t.Fatalf("nil")
+		t.Fatal("nil")
 	}
 }
 
+func TestGetHabitReturnsNotOKForHabitWithNoName(t *testing.T) {
+	t.Parallel()
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatalf("unable to start server: %v", err)
+		}
+	}()
+	s, err := networkstore.Open("")
+	if err != nil {
+		t.Fatalf("unable to create connection to server: %sv", err)
+	}
+	_, ok := s.GetHabit("")
+	if ok {
+		t.Fatal("ok")
+	}
+}

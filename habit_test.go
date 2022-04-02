@@ -121,5 +121,4 @@ func wednesday() time.Time {
 
 // Contract for a store, for things where we dont care how, its in habit
 
-// Implimentation tests concrete gotchya pbfilestore 
-
+// Implimentation tests concrete gotchya pbfilestore

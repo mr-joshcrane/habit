@@ -17,7 +17,7 @@ type Tracker struct {
 }
 
 type Habit struct {
-	HabitName	  string
+	HabitName     string
 	Streak        int
 	LastPerformed time.Time
 }
