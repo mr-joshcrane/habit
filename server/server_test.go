@@ -13,17 +13,18 @@ import (
 
 func TestUpdateHabitReturnsErrorForHabitWithNoName(t *testing.T) {
 	t.Parallel()
+	addr := "localhost:8010"
 	input := &habit.Habit{
 		Streak: 1,
 		LastPerformed: time.Unix(1648556311, 0),
 	}
 	go func() {
-		err := server.ListenAndServe()
+		err := server.ListenAndServe(addr)
 		if err != nil {
 			log.Fatalf("unable to start server: %v", err)
 		}
 	}()
-	s, err := networkstore.Open("")
+	s, err := networkstore.Open(addr)
 	if err != nil {
 		t.Fatalf("unable to create connection to server: %sv", err)
 	}
@@ -35,13 +36,14 @@ func TestUpdateHabitReturnsErrorForHabitWithNoName(t *testing.T) {
 
 func TestGetHabitReturnsNotOKForHabitWithNoName(t *testing.T) {
 	t.Parallel()
+	addr := "localhost:8011"
 	go func() {
-		err := server.ListenAndServe()
+		err := server.ListenAndServe(addr)
 		if err != nil {
 			log.Fatalf("unable to start server: %v", err)
 		}
 	}()
-	s, err := networkstore.Open("")
+	s, err := networkstore.Open(addr)
 	if err != nil {
 		t.Fatalf("unable to create connection to server: %sv", err)
 	}

@@ -18,11 +18,11 @@ type NetworkStore struct {
 	client habitpb.HabitServiceClient
 }
 
-func Open(path string) (*NetworkStore, error) {
+func Open(addr string) (*NetworkStore, error) {
 	insecure := grpc.WithTransportCredentials(insecure.NewCredentials())
 	block := grpc.WithBlock()
 	timeout := grpc.WithTimeout(time.Second * 3)
-	conn, err := grpc.Dial("localhost:8080", insecure, block, timeout)
+	conn, err := grpc.Dial(addr, insecure, block, timeout)
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 		return nil, err

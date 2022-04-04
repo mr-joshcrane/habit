@@ -2,7 +2,6 @@ package todoapp
 
 import (
 	"dagger.io/dagger"
-	"dagger.io/dagger/core"
     "universe.dagger.io/docker"
 	"universe.dagger.io/alpine"
 	"universe.dagger.io/bash"
@@ -14,7 +13,7 @@ dagger.#Plan & {
 			"./": read: {
 				contents: dagger.#FS
 			}
-			"./_build": write: contents: actions.build.contents.output
+			"./": write: contents: actions.build.contents.output
 		}
 	}
 	actions: {
@@ -24,36 +23,35 @@ dagger.#Plan & {
 					packages: {
 						bash: {}
 						go: {}
+						protoc: {}
 					}
 				},
 				docker.#Copy & {
 					contents: client.filesystem."./".read.contents
 					dest:     "./habit"
 				},
+				bash.#Run & {
+					workdir: "./habit"
+					script: contents: #"""
+							go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+							go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+						"""#
+				},
 			]
 		}
 
-		test: bash.#Run & {
-			input:   deps.output
-			workdir: "./habit"
-			script: contents: #"""
-				go test ./...
-				"""#
-		}
 
 		build: {
 			run: bash.#Run & {
-				input:   test.output
-				workdir: "/src"
+				input:   deps.output
+				workdir: "./habit"
 				script: contents: #"""
-					./generate_proto.sh
+						export PATH="$PATH:$(go env GOPATH)/bin"
+						protoc -I proto/ --go_out=proto/ proto/store.proto
+						protoc proto/store.proto --go-grpc_out=proto/
+						go test ./...
 					"""#
 			}
-
-			contents: core.#Subdir & {
-				input: run.output.rootfs
-				path:  "/src/build"
-			}
-		}
+		}	
 	}
 }

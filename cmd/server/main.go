@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	server.ListenAndServe()
+	server.ListenAndServe("localhost:8080")
 }

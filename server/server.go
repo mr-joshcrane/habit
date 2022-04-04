@@ -15,9 +15,9 @@ type HabitService struct {
 	database map[string]*habitpb.Habit
 }
 
-func ListenAndServe() error {
+func ListenAndServe(addr string) error {
 	fmt.Println("Starting server")
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8080))
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
