@@ -8,7 +8,7 @@ import (
 )
 
 type Store interface {
-	GetHabit(string) (*Habit, bool) 
+	GetHabit(string, string) (*Habit, bool)
 	UpdateHabit(*Habit) error
 }
 
@@ -17,8 +17,10 @@ type Tracker struct {
 }
 
 type Habit struct {
+	HabitName     string
 	Streak        int
 	LastPerformed time.Time
+	Username	  string
 }
 
 type TimeOption func() time.Time
@@ -31,8 +33,8 @@ func NewTracker(store Store) *Tracker {
 
 var Now = time.Now
 
-func (t *Tracker) GetHabit(name string) (*Habit, bool) {
-	return t.store.GetHabit(name)
+func (t *Tracker) GetHabit(habitname, username string) (*Habit, bool) {
+	return t.store.GetHabit(habitname, username)
 }
 
 func (h *Habit) performedPreviousDay(d time.Time) bool {
@@ -52,13 +54,17 @@ func (h *Habit) Perform() {
 
 func RunCLI(s Store) {
 	args := os.Args[1:]
+	username, ok := os.LookupEnv("USER")
+	if !ok {
+		username = "unknown"
+	}
 	if len(args) == 0 {
 		fmt.Fprintf(os.Stdout, "Pass the name of the habit you performed today\nExample: %s played violin\n", os.Args[0])
 		os.Exit(0)
 	}
 	t := NewTracker(s)
 	habit := strings.Join(args, " ")
-	h, ok := t.GetHabit(habit)
+	h, ok := t.GetHabit(habit, username)
 	h.Perform()
 	if !ok {
 		fmt.Fprintf(os.Stdout, "Well done, you started the new habit: %s!\n", habit)

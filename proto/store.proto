@@ -2,22 +2,37 @@ syntax = "proto3";
 
 option go_package = "./habitpb";
 
-message Habits {
-    message Habit {
-        int32 streak = 1;
-        int64 last_performed = 2;
-    }
-    map<string, Habit> store = 1;
+message Habit {
+    int32 streak = 1;
+    int64 last_performed = 2;
+    string habit_name = 3;
+    string user = 4;
 }
 
-message UpdateHabitsResponse {
-    bool success = 1;
+message Habits {
+    map<string, Habit> habits = 1;
+}
+
+message UpdateHabitRequest {
+    Habit habit = 1;
+};
+
+message UpdateHabitResponse {
+    bool ok = 1;
     string message = 2;
 };
 
-message Empty {}
+message GetHabitRequest {
+    string habitname = 1;
+    string username = 2;
+}
+
+message GetHabitResponse {
+    bool ok = 1;
+    Habit habit = 2;
+}
 
 service HabitService {
-    rpc GetHabit(Empty) returns (Habits) {};
-    rpc UpdateHabits(Habits) returns (UpdateHabitsResponse) {};
+    rpc GetHabit(GetHabitRequest) returns (GetHabitResponse) {};
+    rpc UpdateHabit(UpdateHabitRequest) returns (UpdateHabitResponse) {};
 }

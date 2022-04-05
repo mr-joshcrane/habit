@@ -22,8 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HabitServiceClient interface {
-	GetHabit(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Habits, error)
-	UpdateHabits(ctx context.Context, in *Habits, opts ...grpc.CallOption) (*UpdateHabitsResponse, error)
+	GetHabit(ctx context.Context, in *GetHabitRequest, opts ...grpc.CallOption) (*GetHabitResponse, error)
+	UpdateHabit(ctx context.Context, in *UpdateHabitRequest, opts ...grpc.CallOption) (*UpdateHabitResponse, error)
 }
 
 type habitServiceClient struct {
@@ -34,8 +34,8 @@ func NewHabitServiceClient(cc grpc.ClientConnInterface) HabitServiceClient {
 	return &habitServiceClient{cc}
 }
 
-func (c *habitServiceClient) GetHabit(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Habits, error) {
-	out := new(Habits)
+func (c *habitServiceClient) GetHabit(ctx context.Context, in *GetHabitRequest, opts ...grpc.CallOption) (*GetHabitResponse, error) {
+	out := new(GetHabitResponse)
 	err := c.cc.Invoke(ctx, "/HabitService/GetHabit", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -43,9 +43,9 @@ func (c *habitServiceClient) GetHabit(ctx context.Context, in *Empty, opts ...gr
 	return out, nil
 }
 
-func (c *habitServiceClient) UpdateHabits(ctx context.Context, in *Habits, opts ...grpc.CallOption) (*UpdateHabitsResponse, error) {
-	out := new(UpdateHabitsResponse)
-	err := c.cc.Invoke(ctx, "/HabitService/UpdateHabits", in, out, opts...)
+func (c *habitServiceClient) UpdateHabit(ctx context.Context, in *UpdateHabitRequest, opts ...grpc.CallOption) (*UpdateHabitResponse, error) {
+	out := new(UpdateHabitResponse)
+	err := c.cc.Invoke(ctx, "/HabitService/UpdateHabit", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +56,8 @@ func (c *habitServiceClient) UpdateHabits(ctx context.Context, in *Habits, opts 
 // All implementations must embed UnimplementedHabitServiceServer
 // for forward compatibility
 type HabitServiceServer interface {
-	GetHabit(context.Context, *Empty) (*Habits, error)
-	UpdateHabits(context.Context, *Habits) (*UpdateHabitsResponse, error)
+	GetHabit(context.Context, *GetHabitRequest) (*GetHabitResponse, error)
+	UpdateHabit(context.Context, *UpdateHabitRequest) (*UpdateHabitResponse, error)
 	mustEmbedUnimplementedHabitServiceServer()
 }
 
@@ -65,11 +65,11 @@ type HabitServiceServer interface {
 type UnimplementedHabitServiceServer struct {
 }
 
-func (UnimplementedHabitServiceServer) GetHabit(context.Context, *Empty) (*Habits, error) {
+func (UnimplementedHabitServiceServer) GetHabit(context.Context, *GetHabitRequest) (*GetHabitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHabit not implemented")
 }
-func (UnimplementedHabitServiceServer) UpdateHabits(context.Context, *Habits) (*UpdateHabitsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateHabits not implemented")
+func (UnimplementedHabitServiceServer) UpdateHabit(context.Context, *UpdateHabitRequest) (*UpdateHabitResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateHabit not implemented")
 }
 func (UnimplementedHabitServiceServer) mustEmbedUnimplementedHabitServiceServer() {}
 
@@ -85,7 +85,7 @@ func RegisterHabitServiceServer(s grpc.ServiceRegistrar, srv HabitServiceServer)
 }
 
 func _HabitService_GetHabit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(GetHabitRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -97,25 +97,25 @@ func _HabitService_GetHabit_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/HabitService/GetHabit",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HabitServiceServer).GetHabit(ctx, req.(*Empty))
+		return srv.(HabitServiceServer).GetHabit(ctx, req.(*GetHabitRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HabitService_UpdateHabits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Habits)
+func _HabitService_UpdateHabit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateHabitRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HabitServiceServer).UpdateHabits(ctx, in)
+		return srv.(HabitServiceServer).UpdateHabit(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/HabitService/UpdateHabits",
+		FullMethod: "/HabitService/UpdateHabit",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HabitServiceServer).UpdateHabits(ctx, req.(*Habits))
+		return srv.(HabitServiceServer).UpdateHabit(ctx, req.(*UpdateHabitRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -132,8 +132,8 @@ var HabitService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HabitService_GetHabit_Handler,
 		},
 		{
-			MethodName: "UpdateHabits",
-			Handler:    _HabitService_UpdateHabits_Handler,
+			MethodName: "UpdateHabit",
+			Handler:    _HabitService_UpdateHabit_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

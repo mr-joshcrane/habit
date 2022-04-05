@@ -3,6 +3,7 @@ package networkstore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"habit"
 	"habit/proto/habitpb"
 	"log"
@@ -13,70 +14,66 @@ import (
 )
 
 type NetworkStore struct {
-	data map[string]*habit.Habit
+	conn *grpc.ClientConn
 	client habitpb.HabitServiceClient
 }
 
-
-func Open(path string) (*NetworkStore, error) {
+func Open(addr string) (*NetworkStore, error) {
 	insecure := grpc.WithTransportCredentials(insecure.NewCredentials())
 	block := grpc.WithBlock()
 	timeout := grpc.WithTimeout(time.Second * 3)
-	conn, err := grpc.Dial("localhost:8080", insecure, block, timeout)
+	conn, err := grpc.Dial(addr, insecure, block, timeout)
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 		return nil, err
 	}
-	defer conn.Close()
 	client := habitpb.NewHabitServiceClient(conn)
-	habits, err := client.GetHabit(context.TODO(), &habitpb.Empty{})
 	if err != nil {
 		return nil, err
 	}
-	data := map[string]*habit.Habit{}
-	for k, v := range habits.Store {
-		data[k] = &habit.Habit{
-			LastPerformed: time.Unix(v.LastPerformed, 0),
-			Streak: int(v.Streak),
-		}
-	}
 
 	return &NetworkStore{
-		data: data,
 		client: client,
 	}, nil
 }
 
+func (s *NetworkStore) Close() {
+	s.conn.Close()
+}
+
 func (s *NetworkStore) UpdateHabit(habit *habit.Habit) error {
-	data := map[string]*habitpb.Habits_Habit{}
-	for k, v := range s.data {
-		data[k] = &habitpb.Habits_Habit{
-			Streak: int32(v.Streak),
-			LastPerformed: v.LastPerformed.Unix(),
-		}
+	h := &habitpb.Habit{
+		HabitName: habit.HabitName,
+		Streak: int32(habit.Streak),
+		LastPerformed: habit.LastPerformed.Unix(),
+		User: habit.Username,
 	}
-	store := habitpb.Habits{
-		Store: data,
+	req := habitpb.UpdateHabitRequest{
+		Habit: h,
 	}
-	response, err := s.client.UpdateHabits(context.TODO(), &store)
+	response, err := s.client.UpdateHabit(context.TODO(), &req)
 	if err != nil {
 		return err
 	}
-	if !response.Success {
+	if !response.Ok {
 		return errors.New(response.Message)
 	}
-
 	return nil
 }
 
-func (s NetworkStore) GetHabit(name string) (*habit.Habit, bool) {
-	h, ok := s.data[name]
-	if ok {
-		return h, true
+func (s NetworkStore) GetHabit(habitname, username string) (*habit.Habit, bool) {
+	req := habitpb.GetHabitRequest{
+		Habitname: habitname,
+		Username: username,
 	}
-	h = &habit.Habit{
-		Streak: 1,
+	h, err := s.client.GetHabit(context.TODO(), &req)
+	if err != nil {
+		fmt.Println(err)
 	}
-	s.data[name] = h
-	return h, false
+	return &habit.Habit{
+		Streak: int(h.Habit.GetStreak()),
+		LastPerformed: time.Unix(h.Habit.GetLastPerformed(), 0),
+		Username: username,
+		HabitName: habitname,
+	}, h.GetOk()
 }

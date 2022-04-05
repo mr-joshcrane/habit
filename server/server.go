@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -10,36 +10,83 @@ import (
 	"google.golang.org/grpc"
 )
 
-var database = map[string]*habitpb.Habits_Habit{}
-
-type HabitServer struct {
-  habitpb.UnimplementedHabitServiceServer
+type UserData map[string]*habitpb.Habit
+type HabitService struct {
+	habitpb.UnimplementedHabitServiceServer
+	store map[string]UserData
 }
 
-func (s *HabitServer) GetHabit(ctx context.Context, Empty *habitpb.Empty) (*habitpb.Habits, error) {
-	return &habitpb.Habits{
-		Store: database,
-	}, nil
-}
-
-func (s *HabitServer) UpdateHabits(ctx context.Context, Habit *habitpb.Habits) (*habitpb.UpdateHabitsResponse, error) {
-	database = Habit.Store
-	fmt.Println(database)
-	return &habitpb.UpdateHabitsResponse{
-		Success: true,
-		Message: "Store updated successfully",
-	}, nil
-}
-
-func main() {
+func ListenAndServe(addr string) error {
 	fmt.Println("Starting server")
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 8080))
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
 	grpc := grpc.NewServer()
-	s := &HabitServer{}
+	s := &HabitService{
+		store: map[string]UserData{},
+	}
 	habitpb.RegisterHabitServiceServer(grpc, s)
-	grpc.Serve(lis)
+	return grpc.Serve(lis)
+}
+
+func (s *HabitService) GetHabit(ctx context.Context, req *habitpb.GetHabitRequest) (*habitpb.GetHabitResponse, error) {
+	store, ok := s.store[req.GetUsername()]
+	if !ok {
+		return &habitpb.GetHabitResponse{
+			Habit: nil,
+			Ok:    false,
+		}, nil
+	}	
+	h, ok := store[req.GetHabitname()]
+	if !ok {
+		return &habitpb.GetHabitResponse{
+			Habit: nil,
+			Ok:    false,
+		}, nil
+	}	
+	return &habitpb.GetHabitResponse{
+		Habit: h,
+		Ok:    true,
+	}, nil
+}
+
+func (s *HabitService) UpdateHabit(ctx context.Context, req *habitpb.UpdateHabitRequest) (*habitpb.UpdateHabitResponse, error) {
+	fmt.Println(s.store)
+	if req.Habit.GetHabitName() == "" {
+		return nil, fmt.Errorf("habitname is required")
+	}
+	if req.Habit.GetUser() == "" {
+		return nil, fmt.Errorf("username is required")
+	}
+	_, ok := s.store[req.Habit.GetUser()]
+	if !ok {
+		s.store[req.Habit.GetUser()] = map[string]*habitpb.Habit{}
+		s.store[req.Habit.GetUser()][req.Habit.HabitName] = req.Habit
+		s.store[req.Habit.GetUser()][req.Habit.HabitName].Streak = 1
+		return &habitpb.UpdateHabitResponse{
+			Ok:      true,
+			Message: "New store created. Habit UPSERTED successfully",
+		}, nil
+	}
+	_, ok = s.store[req.Habit.GetUser()][req.Habit.GetHabitName()]
+	if !ok {
+		s.store[req.Habit.GetUser()][req.Habit.GetHabitName()] = req.Habit
+		s.store[req.Habit.GetUser()][req.Habit.GetHabitName()].Streak = 1
+		return &habitpb.UpdateHabitResponse{
+			Ok:      true,
+			Message: "Habit UPSERTED successfully",
+		}, nil
+	}
+	store := s.store[req.Habit.GetUser()]
+	habit := store[req.Habit.GetHabitName()]
+
+	habit.Streak ++
+	habit.LastPerformed = req.Habit.GetLastPerformed()
+	
+	return &habitpb.UpdateHabitResponse{
+		Ok:      true,
+		Message: "Habit UPDATED successfully",
+	}, nil
 }
