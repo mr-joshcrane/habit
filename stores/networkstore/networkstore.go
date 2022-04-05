@@ -2,7 +2,6 @@ package networkstore
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"habit"
 	"habit/proto/habitpb"
@@ -51,12 +50,9 @@ func (s *NetworkStore) UpdateHabit(habit *habit.Habit) error {
 	req := habitpb.UpdateHabitRequest{
 		Habit: h,
 	}
-	response, err := s.client.UpdateHabit(context.TODO(), &req)
+	_, err := s.client.UpdateHabit(context.TODO(), &req)
 	if err != nil {
 		return err
-	}
-	if !response.Ok {
-		return errors.New(response.Message)
 	}
 	return nil
 }

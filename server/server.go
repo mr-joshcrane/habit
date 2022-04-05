@@ -66,7 +66,6 @@ func (s *HabitService) UpdateHabit(ctx context.Context, req *habitpb.UpdateHabit
 		s.store[req.Habit.GetUser()][req.Habit.HabitName] = req.Habit
 		s.store[req.Habit.GetUser()][req.Habit.HabitName].Streak = 1
 		return &habitpb.UpdateHabitResponse{
-			Ok:      true,
 			Message: "New store created. Habit UPSERTED successfully",
 		}, nil
 	}
@@ -75,7 +74,6 @@ func (s *HabitService) UpdateHabit(ctx context.Context, req *habitpb.UpdateHabit
 		s.store[req.Habit.GetUser()][req.Habit.GetHabitName()] = req.Habit
 		s.store[req.Habit.GetUser()][req.Habit.GetHabitName()].Streak = 1
 		return &habitpb.UpdateHabitResponse{
-			Ok:      true,
 			Message: "Habit UPSERTED successfully",
 		}, nil
 	}
@@ -86,7 +84,6 @@ func (s *HabitService) UpdateHabit(ctx context.Context, req *habitpb.UpdateHabit
 	habit.LastPerformed = req.Habit.GetLastPerformed()
 	
 	return &habitpb.UpdateHabitResponse{
-		Ok:      true,
 		Message: "Habit UPDATED successfully",
 	}, nil
 }

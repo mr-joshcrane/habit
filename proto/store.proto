@@ -18,7 +18,6 @@ message UpdateHabitRequest {
 };
 
 message UpdateHabitResponse {
-    bool ok = 1;
     string message = 2;
 };
 
