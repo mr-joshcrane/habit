@@ -8,7 +8,7 @@ import (
 	"os"
 )
 func main () {
-	defaultPath := "habit"
+	defaultPath := "localhost:8080"
 	s, err := networkstore.Open(defaultPath)
 	// s, err := pbfilestore.Open(defaultPath)
 	if err != nil {

@@ -12,12 +12,13 @@ import (
 func TestNewHabitPerformedHasAStreakOfOne(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
+	username := "test"
 	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	tracker := habit.NewTracker(s)
-	h, ok := tracker.GetHabit("piano")
+	h, ok := tracker.GetHabit("piano", username)
 	if ok {
 		t.Fatal("habit should not, but it does")
 	}
@@ -33,12 +34,13 @@ func TestNewHabitPerformedHasAStreakOfOne(t *testing.T) {
 func TestPerformingAHabitTwiceOnTheSameDayDoesNotIncreaseStreak(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
+	username := "test"
 	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	tracker := habit.NewTracker(s)
-	h, ok := tracker.GetHabit("piano")
+	h, ok := tracker.GetHabit("piano", username)
 	if ok {
 		t.Fatal("habit should not exist, but it does")
 	}
@@ -55,12 +57,13 @@ func TestPerformingAHabitTwiceOnTheSameDayDoesNotIncreaseStreak(t *testing.T) {
 func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
+	username := "test"
 	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	tracker := habit.NewTracker(s)
-	h, ok := tracker.GetHabit("piano")
+	h, ok := tracker.GetHabit("piano", username)
 	if ok {
 		t.Fatal("habit should not exist, but it does")
 	}
@@ -84,12 +87,13 @@ func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 func TestMissingADayResetsStreak(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
+	username := "test"
 	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	tracker := habit.NewTracker(s)
-	h, ok := tracker.GetHabit("piano")
+	h, ok := tracker.GetHabit("piano", username)
 	if ok {
 		t.Fatal("habit should not exist, but it does")
 	}

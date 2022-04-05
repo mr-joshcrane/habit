@@ -10,9 +10,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+type UserData map[string]*habitpb.Habit
 type HabitService struct {
 	habitpb.UnimplementedHabitServiceServer
-	database map[string]*habitpb.Habit
+	store map[string]UserData
 }
 
 func ListenAndServe(addr string) error {
@@ -24,21 +25,27 @@ func ListenAndServe(addr string) error {
 
 	grpc := grpc.NewServer()
 	s := &HabitService{
-		database: map[string]*habitpb.Habit{},
+		store: map[string]UserData{},
 	}
 	habitpb.RegisterHabitServiceServer(grpc, s)
 	return grpc.Serve(lis)
 }
 
 func (s *HabitService) GetHabit(ctx context.Context, req *habitpb.GetHabitRequest) (*habitpb.GetHabitResponse, error) {
-	h, ok := s.database[req.GetHabitname()]
+	store, ok := s.store[req.GetUsername()]
 	if !ok {
 		return &habitpb.GetHabitResponse{
 			Habit: nil,
 			Ok:    false,
 		}, nil
 	}	
-
+	h, ok := store[req.GetHabitname()]
+	if !ok {
+		return &habitpb.GetHabitResponse{
+			Habit: nil,
+			Ok:    false,
+		}, nil
+	}	
 	return &habitpb.GetHabitResponse{
 		Habit: h,
 		Ok:    true,
@@ -46,16 +53,40 @@ func (s *HabitService) GetHabit(ctx context.Context, req *habitpb.GetHabitReques
 }
 
 func (s *HabitService) UpdateHabit(ctx context.Context, req *habitpb.UpdateHabitRequest) (*habitpb.UpdateHabitResponse, error) {
-	_, ok := s.database[req.Habit.GetHabitName()]
-	if !ok {
-		return nil, fmt.Errorf("no such habit exists: %s", req.Habit.GetHabitName())
+	fmt.Println(s.store)
+	if req.Habit.GetHabitName() == "" {
+		return nil, fmt.Errorf("habitname is required")
 	}
+	if req.Habit.GetUser() == "" {
+		return nil, fmt.Errorf("username is required")
+	}
+	_, ok := s.store[req.Habit.GetUser()]
+	if !ok {
+		s.store[req.Habit.GetUser()] = map[string]*habitpb.Habit{}
+		s.store[req.Habit.GetUser()][req.Habit.HabitName] = req.Habit
+		s.store[req.Habit.GetUser()][req.Habit.HabitName].Streak = 1
+		return &habitpb.UpdateHabitResponse{
+			Ok:      true,
+			Message: "New store created. Habit UPSERTED successfully",
+		}, nil
+	}
+	_, ok = s.store[req.Habit.GetUser()][req.Habit.GetHabitName()]
+	if !ok {
+		s.store[req.Habit.GetUser()][req.Habit.GetHabitName()] = req.Habit
+		s.store[req.Habit.GetUser()][req.Habit.GetHabitName()].Streak = 1
+		return &habitpb.UpdateHabitResponse{
+			Ok:      true,
+			Message: "Habit UPSERTED successfully",
+		}, nil
+	}
+	store := s.store[req.Habit.GetUser()]
+	habit := store[req.Habit.GetHabitName()]
 
-	fmt.Println(req)
-	s.database[req.Habit.GetHabitName()] = req.Habit
-	fmt.Println(s.database)
+	habit.Streak ++
+	habit.LastPerformed = req.Habit.GetLastPerformed()
+	
 	return &habitpb.UpdateHabitResponse{
 		Ok:      true,
-		Message: "Store updated successfully",
+		Message: "Habit UPDATED successfully",
 	}, nil
 }

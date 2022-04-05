@@ -47,7 +47,25 @@ func TestGetHabitReturnsNotOKForHabitWithNoName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unable to create connection to server: %sv", err)
 	}
-	_, ok := s.GetHabit("")
+	_, ok := s.GetHabit("", "username")
+	if ok {
+		t.Fatal("ok")
+	}
+}
+func TestGetHabitReturnsNotOKForHabitWithNoUser(t *testing.T) {
+	t.Parallel()
+	addr := "localhost:8012"
+	go func() {
+		err := server.ListenAndServe(addr)
+		if err != nil {
+			log.Fatalf("unable to start server: %v", err)
+		}
+	}()
+	s, err := networkstore.Open(addr)
+	if err != nil {
+		t.Fatalf("unable to create connection to server: %sv", err)
+	}
+	_, ok := s.GetHabit("habit", "")
 	if ok {
 		t.Fatal("ok")
 	}

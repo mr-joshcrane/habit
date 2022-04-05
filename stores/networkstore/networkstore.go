@@ -46,6 +46,7 @@ func (s *NetworkStore) UpdateHabit(habit *habit.Habit) error {
 		HabitName: habit.HabitName,
 		Streak: int32(habit.Streak),
 		LastPerformed: habit.LastPerformed.Unix(),
+		User: habit.Username,
 	}
 	req := habitpb.UpdateHabitRequest{
 		Habit: h,
@@ -60,24 +61,19 @@ func (s *NetworkStore) UpdateHabit(habit *habit.Habit) error {
 	return nil
 }
 
-func (s NetworkStore) GetHabit(name string) (*habit.Habit, bool) {
+func (s NetworkStore) GetHabit(habitname, username string) (*habit.Habit, bool) {
 	req := habitpb.GetHabitRequest{
-		Habitname: name,
+		Habitname: habitname,
+		Username: username,
 	}
 	h, err := s.client.GetHabit(context.TODO(), &req)
 	if err != nil {
 		fmt.Println(err)
 	}
-	if !h.GetOk() {
-		return &habit.Habit{
-			HabitName: name,
-			Streak: 1,
-			LastPerformed: time.Now(),
-		}, false
-	}
-
 	return &habit.Habit{
 		Streak: int(h.Habit.GetStreak()),
 		LastPerformed: time.Unix(h.Habit.GetLastPerformed(), 0),
+		Username: username,
+		HabitName: habitname,
 	}, h.GetOk()
 }

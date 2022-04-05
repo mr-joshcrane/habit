@@ -33,7 +33,7 @@ func (s *PBFileStore) UpdateHabit(h *habit.Habit) error {
 	return err
 }
 
-func (s PBFileStore) GetHabit(name string) (*habit.Habit, bool) {
+func (s PBFileStore) GetHabit(name, username string) (*habit.Habit, bool) {
 	h, ok := s.data[name]
 	if ok {
 		return h, true

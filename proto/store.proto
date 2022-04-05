@@ -6,6 +6,7 @@ message Habit {
     int32 streak = 1;
     int64 last_performed = 2;
     string habit_name = 3;
+    string user = 4;
 }
 
 message Habits {
@@ -23,6 +24,7 @@ message UpdateHabitResponse {
 
 message GetHabitRequest {
     string habitname = 1;
+    string username = 2;
 }
 
 message GetHabitResponse {
