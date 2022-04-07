@@ -1,6 +1,7 @@
 package habit
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -10,6 +11,7 @@ import (
 type Store interface {
 	GetHabit(string, string) (*Habit, bool)
 	UpdateHabit(*Habit) error
+	RegisterBattle(string, *Habit) (string, error)
 }
 
 type Tracker struct {
@@ -20,7 +22,7 @@ type Habit struct {
 	HabitName     string
 	Streak        int
 	LastPerformed time.Time
-	Username	  string
+	Username      string
 }
 
 type TimeOption func() time.Time
@@ -53,6 +55,8 @@ func (h *Habit) Perform() {
 }
 
 func RunCLI(s Store) {
+	challenge := flag.String("c", "none", "Create or join a new challenge")
+	flag.Parse()
 	args := os.Args[1:]
 	username, ok := os.LookupEnv("USER")
 	if !ok {
@@ -76,5 +80,18 @@ func RunCLI(s Store) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
 		os.Exit(1)
+	}
+	if *challenge != "none" {
+		code, err := s.RegisterBattle(*challenge, h)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+		if *challenge == "" {
+			fmt.Fprintf(os.Stdout, "New challenge initiated, please give the user the following code: %s\n", code)
+		} else {
+			fmt.Fprintf(os.Stdout, "Joined challenge: %s\n", code)
+		}
+				
 	}
 }

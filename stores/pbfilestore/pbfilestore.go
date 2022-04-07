@@ -20,6 +20,7 @@ func (s *PBFileStore) UpdateHabit(h *habit.Habit) error {
 		Streak: h.Streak,
 		LastPerformed: h.LastPerformed,
 		HabitName: h.HabitName,
+		Username: h.Username,
 	}
 	data, err := proto.Marshal(s.ToProto())
 	if err != nil {
@@ -72,9 +73,13 @@ func Open(path string) (*PBFileStore, error) {
 		name := k
 		streak := int(v.GetStreak())
 		lastPerformed := v.GetLastPerformed()
+		habitName := v.GetHabitName()
+		username := v.GetUser()
 		data[name] = &habit.Habit{
 			Streak: streak,
-			LastPerformed: time.Unix(lastPerformed,0),			
+			LastPerformed: time.Unix(lastPerformed,0),
+			HabitName: habitName,
+			Username: username,		
 		}
 	}
 	return &PBFileStore{
@@ -91,9 +96,14 @@ func (s PBFileStore) ToProto() *habitpb.Habits {
 			Streak: int32(v.Streak),
 			LastPerformed: v.LastPerformed.Unix(),
 			HabitName: k,
+			User: v.Username,
 		}
 	}
 	return &habitpb.Habits{
 		Habits: h,
 	}
+}
+
+func (s PBFileStore) RegisterBattle(code string, h *habit.Habit) (string, error) {
+	return "not implemented", nil
 }
