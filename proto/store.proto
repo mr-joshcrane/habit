@@ -12,7 +12,6 @@ message Habit {
 message Habits {
     map<string, Habit> habits = 1;
 }
-
 message UpdateHabitRequest {
     Habit habit = 1;
 };
@@ -31,7 +30,26 @@ message GetHabitResponse {
     Habit habit = 2;
 }
 
+message Battle {
+    Habit habit_one = 1;
+    Habit habit_two = 2;
+    string code = 3;
+    string winner = 4;
+}
+
+message BattleRequest {
+    string code = 1;
+    GetHabitRequest habit = 2;
+}
+
+message BattleResponse {
+   Battle battle = 1;
+   bool ok = 2;
+   string message = 3;
+}
+
 service HabitService {
     rpc GetHabit(GetHabitRequest) returns (GetHabitResponse) {};
     rpc UpdateHabit(UpdateHabitRequest) returns (UpdateHabitResponse) {};
+    rpc RegisterBattle(BattleRequest) returns (BattleResponse) {};
 }

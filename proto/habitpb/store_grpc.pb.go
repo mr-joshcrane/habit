@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type HabitServiceClient interface {
 	GetHabit(ctx context.Context, in *GetHabitRequest, opts ...grpc.CallOption) (*GetHabitResponse, error)
 	UpdateHabit(ctx context.Context, in *UpdateHabitRequest, opts ...grpc.CallOption) (*UpdateHabitResponse, error)
+	RegisterBattle(ctx context.Context, in *BattleRequest, opts ...grpc.CallOption) (*BattleResponse, error)
 }
 
 type habitServiceClient struct {
@@ -52,12 +53,22 @@ func (c *habitServiceClient) UpdateHabit(ctx context.Context, in *UpdateHabitReq
 	return out, nil
 }
 
+func (c *habitServiceClient) RegisterBattle(ctx context.Context, in *BattleRequest, opts ...grpc.CallOption) (*BattleResponse, error) {
+	out := new(BattleResponse)
+	err := c.cc.Invoke(ctx, "/HabitService/RegisterBattle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HabitServiceServer is the server API for HabitService service.
 // All implementations must embed UnimplementedHabitServiceServer
 // for forward compatibility
 type HabitServiceServer interface {
 	GetHabit(context.Context, *GetHabitRequest) (*GetHabitResponse, error)
 	UpdateHabit(context.Context, *UpdateHabitRequest) (*UpdateHabitResponse, error)
+	RegisterBattle(context.Context, *BattleRequest) (*BattleResponse, error)
 	mustEmbedUnimplementedHabitServiceServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedHabitServiceServer) GetHabit(context.Context, *GetHabitReques
 }
 func (UnimplementedHabitServiceServer) UpdateHabit(context.Context, *UpdateHabitRequest) (*UpdateHabitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateHabit not implemented")
+}
+func (UnimplementedHabitServiceServer) RegisterBattle(context.Context, *BattleRequest) (*BattleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterBattle not implemented")
 }
 func (UnimplementedHabitServiceServer) mustEmbedUnimplementedHabitServiceServer() {}
 
@@ -120,6 +134,24 @@ func _HabitService_UpdateHabit_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HabitService_RegisterBattle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BattleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HabitServiceServer).RegisterBattle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/HabitService/RegisterBattle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HabitServiceServer).RegisterBattle(ctx, req.(*BattleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HabitService_ServiceDesc is the grpc.ServiceDesc for HabitService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var HabitService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateHabit",
 			Handler:    _HabitService_UpdateHabit_Handler,
+		},
+		{
+			MethodName: "RegisterBattle",
+			Handler:    _HabitService_RegisterBattle_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

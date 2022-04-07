@@ -73,3 +73,18 @@ func (s NetworkStore) GetHabit(habitname, username string) (*habit.Habit, bool) 
 		HabitName: habitname,
 	}, h.GetOk()
 }
+
+func (s NetworkStore) RegisterBattle(code string, h *habit.Habit ) (string, error) {
+	req := habitpb.BattleRequest{
+		Code: code,
+		Habit: &habitpb.GetHabitRequest{
+			Habitname: h.HabitName,
+			Username: h.Username,
+		},
+	}
+	resp, err := s.client.RegisterBattle(context.TODO(), &req)
+	if err != nil {
+		return "", err
+	}
+	return resp.Battle.GetCode(), err 
+}
