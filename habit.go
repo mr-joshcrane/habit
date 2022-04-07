@@ -10,8 +10,10 @@ import (
 
 type Store interface {
 	GetHabit(string, string) (*Habit, bool)
+	ListHabits(string) []string
 	UpdateHabit(*Habit) error
 	RegisterBattle(string, *Habit) (string, error)
+    GetBattleAssociations(*Habit) []string;
 }
 
 type Tracker struct {
@@ -57,7 +59,7 @@ func (h *Habit) Perform() {
 func RunCLI(s Store) {
 	challenge := flag.String("c", "none", "Create or join a new challenge")
 	flag.Parse()
-	args := os.Args[1:]
+	args := flag.Args()
 	username, ok := os.LookupEnv("USER")
 	if !ok {
 		username = "unknown"
@@ -68,14 +70,19 @@ func RunCLI(s Store) {
 	}
 	t := NewTracker(s)
 	habit := strings.Join(args, " ")
+
 	h, ok := t.GetHabit(habit, username)
 	h.Perform()
+	fmt.Println()
 	if !ok {
 		fmt.Fprintf(os.Stdout, "Well done, you started the new habit: %s!\n", habit)
 	} else {
 		fmt.Fprintf(os.Stdout, "Well done, you continued working on habit: %s!\n", habit)
 		fmt.Fprintf(os.Stdout, "You've been performing this for a streak of %d day(s)!\n", h.Streak)
 	}
+	hList := s.ListHabits(username)
+	fmt.Fprintf(os.Stdout, "All your current habits: %s!\n", hList)
+
 	err := t.store.UpdateHabit(h)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
@@ -92,6 +99,7 @@ func RunCLI(s Store) {
 		} else {
 			fmt.Fprintf(os.Stdout, "Joined challenge: %s\n", code)
 		}
-				
 	}
+	b := s.GetBattleAssociations(h)
+	fmt.Fprintf(os.Stdout, "This habit is associated with the following battles: %s!\n", b)				
 }

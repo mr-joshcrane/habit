@@ -74,6 +74,22 @@ func (s NetworkStore) GetHabit(habitname, username string) (*habit.Habit, bool) 
 	}, h.GetOk()
 }
 
+
+func (s NetworkStore) ListHabits(username string) []string {
+	req := habitpb.ListHabitsRequest{
+		Username: username,
+	}
+	h, err := s.client.ListHabits(context.TODO(), &req)
+	if err != nil {
+		fmt.Println(err)
+	}
+	habits := make([]string, 0, len(h.Habits.Habits))
+	for _, v := range h.Habits.Habits {
+		habits = append(habits, v.HabitName)
+	}
+	return habits
+}
+
 func (s NetworkStore) RegisterBattle(code string, h *habit.Habit ) (string, error) {
 	req := habitpb.BattleRequest{
 		Code: code,
@@ -87,4 +103,25 @@ func (s NetworkStore) RegisterBattle(code string, h *habit.Habit ) (string, erro
 		return "", err
 	}
 	return resp.Battle.GetCode(), err 
+}
+
+func (s NetworkStore) GetBattleAssociations(h *habit.Habit) []string  {
+	habit := &habitpb.Habit{
+		HabitName: h.HabitName,
+		Streak: int32(h.Streak),
+		LastPerformed: h.LastPerformed.Unix(),
+		User: h.Username,
+	}
+	req := habitpb.BattleAssociationsRequest{
+		Habit: habit,
+	}
+	associations, err := s.client.GetBattleAssociations(context.TODO(), &req)
+	if err != nil {
+		fmt.Println(err)
+	}
+	codes := []string{}
+	for _, v := range associations.Battle {
+		codes = append(codes, v.Code)
+	}
+	return codes
 }
