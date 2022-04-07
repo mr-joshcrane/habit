@@ -1,55 +1,13 @@
 syntax = "proto3";
-
 option go_package = "./habitpb";
 
-message Habit {
-    int32 streak = 1;
-    int64 last_performed = 2;
-    string habit_name = 3;
-    string user = 4;
-}
-
-message Habits {
-    map<string, Habit> habits = 1;
-}
-message UpdateHabitRequest {
-    Habit habit = 1;
-};
-
-message UpdateHabitResponse {
-    string message = 2;
-};
-
-message GetHabitRequest {
-    string habitname = 1;
-    string username = 2;
-}
-
-message GetHabitResponse {
-    bool ok = 1;
-    Habit habit = 2;
-}
-
-message Battle {
-    Habit habit_one = 1;
-    Habit habit_two = 2;
-    string code = 3;
-    string winner = 4;
-}
-
-message BattleRequest {
-    string code = 1;
-    GetHabitRequest habit = 2;
-}
-
-message BattleResponse {
-   Battle battle = 1;
-   bool ok = 2;
-   string message = 3;
-}
+import "proto/battle.proto";
+import "proto/habit.proto";
 
 service HabitService {
     rpc GetHabit(GetHabitRequest) returns (GetHabitResponse) {};
+    rpc ListHabits(ListHabitsRequest) returns (ListHabitsResponse) {};
     rpc UpdateHabit(UpdateHabitRequest) returns (UpdateHabitResponse) {};
     rpc RegisterBattle(BattleRequest) returns (BattleResponse) {};
+    rpc GetBattleAssociations(BattleAssociationsRequest) returns (BattleAssociationsResponse) {};
 }

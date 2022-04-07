@@ -1,0 +1,31 @@
+syntax = "proto3";
+option go_package = "./habitpb";
+
+import "proto/habit.proto";
+
+message Battle {
+    Habit habit_one = 1;
+    Habit habit_two = 2;
+    string code = 3;
+    string winner = 4;
+}
+
+message BattleRequest {
+    string code = 1;
+    GetHabitRequest habit = 2;
+}
+
+message BattleResponse {
+   Battle battle = 1;
+   bool ok = 2;
+   string message = 3;
+}
+
+message BattleAssociationsRequest{
+    Habit habit = 1;
+}
+
+message BattleAssociationsResponse {
+    Habit habit = 1;
+    repeated Battle battle = 2;
+}

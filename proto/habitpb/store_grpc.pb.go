@@ -23,8 +23,10 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HabitServiceClient interface {
 	GetHabit(ctx context.Context, in *GetHabitRequest, opts ...grpc.CallOption) (*GetHabitResponse, error)
+	ListHabits(ctx context.Context, in *ListHabitsRequest, opts ...grpc.CallOption) (*ListHabitsResponse, error)
 	UpdateHabit(ctx context.Context, in *UpdateHabitRequest, opts ...grpc.CallOption) (*UpdateHabitResponse, error)
 	RegisterBattle(ctx context.Context, in *BattleRequest, opts ...grpc.CallOption) (*BattleResponse, error)
+	GetBattleAssociations(ctx context.Context, in *BattleAssociationsRequest, opts ...grpc.CallOption) (*BattleAssociationsResponse, error)
 }
 
 type habitServiceClient struct {
@@ -38,6 +40,15 @@ func NewHabitServiceClient(cc grpc.ClientConnInterface) HabitServiceClient {
 func (c *habitServiceClient) GetHabit(ctx context.Context, in *GetHabitRequest, opts ...grpc.CallOption) (*GetHabitResponse, error) {
 	out := new(GetHabitResponse)
 	err := c.cc.Invoke(ctx, "/HabitService/GetHabit", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *habitServiceClient) ListHabits(ctx context.Context, in *ListHabitsRequest, opts ...grpc.CallOption) (*ListHabitsResponse, error) {
+	out := new(ListHabitsResponse)
+	err := c.cc.Invoke(ctx, "/HabitService/ListHabits", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -62,13 +73,24 @@ func (c *habitServiceClient) RegisterBattle(ctx context.Context, in *BattleReque
 	return out, nil
 }
 
+func (c *habitServiceClient) GetBattleAssociations(ctx context.Context, in *BattleAssociationsRequest, opts ...grpc.CallOption) (*BattleAssociationsResponse, error) {
+	out := new(BattleAssociationsResponse)
+	err := c.cc.Invoke(ctx, "/HabitService/GetBattleAssociations", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HabitServiceServer is the server API for HabitService service.
 // All implementations must embed UnimplementedHabitServiceServer
 // for forward compatibility
 type HabitServiceServer interface {
 	GetHabit(context.Context, *GetHabitRequest) (*GetHabitResponse, error)
+	ListHabits(context.Context, *ListHabitsRequest) (*ListHabitsResponse, error)
 	UpdateHabit(context.Context, *UpdateHabitRequest) (*UpdateHabitResponse, error)
 	RegisterBattle(context.Context, *BattleRequest) (*BattleResponse, error)
+	GetBattleAssociations(context.Context, *BattleAssociationsRequest) (*BattleAssociationsResponse, error)
 	mustEmbedUnimplementedHabitServiceServer()
 }
 
@@ -79,11 +101,17 @@ type UnimplementedHabitServiceServer struct {
 func (UnimplementedHabitServiceServer) GetHabit(context.Context, *GetHabitRequest) (*GetHabitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHabit not implemented")
 }
+func (UnimplementedHabitServiceServer) ListHabits(context.Context, *ListHabitsRequest) (*ListHabitsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListHabits not implemented")
+}
 func (UnimplementedHabitServiceServer) UpdateHabit(context.Context, *UpdateHabitRequest) (*UpdateHabitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateHabit not implemented")
 }
 func (UnimplementedHabitServiceServer) RegisterBattle(context.Context, *BattleRequest) (*BattleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterBattle not implemented")
+}
+func (UnimplementedHabitServiceServer) GetBattleAssociations(context.Context, *BattleAssociationsRequest) (*BattleAssociationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBattleAssociations not implemented")
 }
 func (UnimplementedHabitServiceServer) mustEmbedUnimplementedHabitServiceServer() {}
 
@@ -112,6 +140,24 @@ func _HabitService_GetHabit_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HabitServiceServer).GetHabit(ctx, req.(*GetHabitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HabitService_ListHabits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListHabitsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HabitServiceServer).ListHabits(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/HabitService/ListHabits",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HabitServiceServer).ListHabits(ctx, req.(*ListHabitsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -152,6 +198,24 @@ func _HabitService_RegisterBattle_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HabitService_GetBattleAssociations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BattleAssociationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HabitServiceServer).GetBattleAssociations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/HabitService/GetBattleAssociations",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HabitServiceServer).GetBattleAssociations(ctx, req.(*BattleAssociationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HabitService_ServiceDesc is the grpc.ServiceDesc for HabitService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -164,12 +228,20 @@ var HabitService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HabitService_GetHabit_Handler,
 		},
 		{
+			MethodName: "ListHabits",
+			Handler:    _HabitService_ListHabits_Handler,
+		},
+		{
 			MethodName: "UpdateHabit",
 			Handler:    _HabitService_UpdateHabit_Handler,
 		},
 		{
 			MethodName: "RegisterBattle",
 			Handler:    _HabitService_RegisterBattle_Handler,
+		},
+		{
+			MethodName: "GetBattleAssociations",
+			Handler:    _HabitService_GetBattleAssociations_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
