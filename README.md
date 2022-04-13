@@ -35,3 +35,8 @@ Well done, you did the piano habit! Keep it up!
 
 Habit battle with friend
 Bragging rights
+
+Who wins the habit app
+Generics for serialization?
+Database
+UUID?

@@ -138,16 +138,17 @@ func (x *Habits) GetHabits() map[string]*Habit {
 	return nil
 }
 
-type UpdateHabitRequest struct {
+type PerformHabitRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Habit *Habit `protobuf:"bytes,1,opt,name=habit,proto3" json:"habit,omitempty"`
+	Habitname string `protobuf:"bytes,1,opt,name=habitname,proto3" json:"habitname,omitempty"`
+	Username  string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
 }
 
-func (x *UpdateHabitRequest) Reset() {
-	*x = UpdateHabitRequest{}
+func (x *PerformHabitRequest) Reset() {
+	*x = PerformHabitRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_habit_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -155,13 +156,13 @@ func (x *UpdateHabitRequest) Reset() {
 	}
 }
 
-func (x *UpdateHabitRequest) String() string {
+func (x *PerformHabitRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateHabitRequest) ProtoMessage() {}
+func (*PerformHabitRequest) ProtoMessage() {}
 
-func (x *UpdateHabitRequest) ProtoReflect() protoreflect.Message {
+func (x *PerformHabitRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_habit_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -173,28 +174,36 @@ func (x *UpdateHabitRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateHabitRequest.ProtoReflect.Descriptor instead.
-func (*UpdateHabitRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use PerformHabitRequest.ProtoReflect.Descriptor instead.
+func (*PerformHabitRequest) Descriptor() ([]byte, []int) {
 	return file_proto_habit_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *UpdateHabitRequest) GetHabit() *Habit {
+func (x *PerformHabitRequest) GetHabitname() string {
 	if x != nil {
-		return x.Habit
+		return x.Habitname
 	}
-	return nil
+	return ""
 }
 
-type UpdateHabitResponse struct {
+func (x *PerformHabitRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+type PerformHabitResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Ok     bool  `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	Streak int32 `protobuf:"varint,2,opt,name=streak,proto3" json:"streak,omitempty"`
 }
 
-func (x *UpdateHabitResponse) Reset() {
-	*x = UpdateHabitResponse{}
+func (x *PerformHabitResponse) Reset() {
+	*x = PerformHabitResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_habit_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -202,13 +211,13 @@ func (x *UpdateHabitResponse) Reset() {
 	}
 }
 
-func (x *UpdateHabitResponse) String() string {
+func (x *PerformHabitResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateHabitResponse) ProtoMessage() {}
+func (*PerformHabitResponse) ProtoMessage() {}
 
-func (x *UpdateHabitResponse) ProtoReflect() protoreflect.Message {
+func (x *PerformHabitResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_habit_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -220,126 +229,23 @@ func (x *UpdateHabitResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateHabitResponse.ProtoReflect.Descriptor instead.
-func (*UpdateHabitResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use PerformHabitResponse.ProtoReflect.Descriptor instead.
+func (*PerformHabitResponse) Descriptor() ([]byte, []int) {
 	return file_proto_habit_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *UpdateHabitResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-type GetHabitRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Habitname string `protobuf:"bytes,1,opt,name=habitname,proto3" json:"habitname,omitempty"`
-	Username  string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-}
-
-func (x *GetHabitRequest) Reset() {
-	*x = GetHabitRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_habit_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetHabitRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetHabitRequest) ProtoMessage() {}
-
-func (x *GetHabitRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_habit_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetHabitRequest.ProtoReflect.Descriptor instead.
-func (*GetHabitRequest) Descriptor() ([]byte, []int) {
-	return file_proto_habit_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *GetHabitRequest) GetHabitname() string {
-	if x != nil {
-		return x.Habitname
-	}
-	return ""
-}
-
-func (x *GetHabitRequest) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-type GetHabitResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Ok    bool   `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
-	Habit *Habit `protobuf:"bytes,2,opt,name=habit,proto3" json:"habit,omitempty"`
-}
-
-func (x *GetHabitResponse) Reset() {
-	*x = GetHabitResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_habit_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetHabitResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetHabitResponse) ProtoMessage() {}
-
-func (x *GetHabitResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_habit_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetHabitResponse.ProtoReflect.Descriptor instead.
-func (*GetHabitResponse) Descriptor() ([]byte, []int) {
-	return file_proto_habit_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *GetHabitResponse) GetOk() bool {
+func (x *PerformHabitResponse) GetOk() bool {
 	if x != nil {
 		return x.Ok
 	}
 	return false
 }
 
-func (x *GetHabitResponse) GetHabit() *Habit {
+func (x *PerformHabitResponse) GetStreak() int32 {
 	if x != nil {
-		return x.Habit
+		return x.Streak
 	}
-	return nil
+	return 0
 }
 
 type ListHabitsRequest struct {
@@ -353,7 +259,7 @@ type ListHabitsRequest struct {
 func (x *ListHabitsRequest) Reset() {
 	*x = ListHabitsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_habit_proto_msgTypes[6]
+		mi := &file_proto_habit_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -366,7 +272,7 @@ func (x *ListHabitsRequest) String() string {
 func (*ListHabitsRequest) ProtoMessage() {}
 
 func (x *ListHabitsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_habit_proto_msgTypes[6]
+	mi := &file_proto_habit_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -379,7 +285,7 @@ func (x *ListHabitsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListHabitsRequest.ProtoReflect.Descriptor instead.
 func (*ListHabitsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_habit_proto_rawDescGZIP(), []int{6}
+	return file_proto_habit_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ListHabitsRequest) GetUsername() string {
@@ -394,14 +300,13 @@ type ListHabitsResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Username string  `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
-	Habits   *Habits `protobuf:"bytes,2,opt,name=habits,proto3" json:"habits,omitempty"`
+	Habits []string `protobuf:"bytes,2,rep,name=habits,proto3" json:"habits,omitempty"`
 }
 
 func (x *ListHabitsResponse) Reset() {
 	*x = ListHabitsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_habit_proto_msgTypes[7]
+		mi := &file_proto_habit_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -414,7 +319,7 @@ func (x *ListHabitsResponse) String() string {
 func (*ListHabitsResponse) ProtoMessage() {}
 
 func (x *ListHabitsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_habit_proto_msgTypes[7]
+	mi := &file_proto_habit_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -427,17 +332,10 @@ func (x *ListHabitsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListHabitsResponse.ProtoReflect.Descriptor instead.
 func (*ListHabitsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_habit_proto_rawDescGZIP(), []int{7}
+	return file_proto_habit_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *ListHabitsResponse) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-func (x *ListHabitsResponse) GetHabits() *Habits {
+func (x *ListHabitsResponse) GetHabits() []string {
 	if x != nil {
 		return x.Habits
 	}
@@ -463,32 +361,23 @@ var file_proto_habit_proto_rawDesc = []byte{
 	0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x1c, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18,
 	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x06, 0x2e, 0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x05, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x32, 0x0a, 0x12, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c,
-	0x0a, 0x05, 0x68, 0x61, 0x62, 0x69, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x06, 0x2e,
-	0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x05, 0x68, 0x61, 0x62, 0x69, 0x74, 0x22, 0x2f, 0x0a, 0x13,
-	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x4b, 0x0a,
-	0x0f, 0x47, 0x65, 0x74, 0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x1c, 0x0a, 0x09, 0x68, 0x61, 0x62, 0x69, 0x74, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x09, 0x68, 0x61, 0x62, 0x69, 0x74, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1a,
+	0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x4f, 0x0a, 0x13, 0x50, 0x65, 0x72, 0x66,
+	0x6f, 0x72, 0x6d, 0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x1c, 0x0a, 0x09, 0x68, 0x61, 0x62, 0x69, 0x74, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x09, 0x68, 0x61, 0x62, 0x69, 0x74, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a,
+	0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x3e, 0x0a, 0x14, 0x50, 0x65, 0x72,
+	0x66, 0x6f, 0x72, 0x6d, 0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x0e, 0x0a, 0x02, 0x6f, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x02, 0x6f,
+	0x6b, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6b, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x05, 0x52, 0x06, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6b, 0x22, 0x2f, 0x0a, 0x11, 0x4c, 0x69, 0x73,
+	0x74, 0x48, 0x61, 0x62, 0x69, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a,
 	0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x40, 0x0a, 0x10, 0x47, 0x65,
-	0x74, 0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e,
-	0x0a, 0x02, 0x6f, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x02, 0x6f, 0x6b, 0x12, 0x1c,
-	0x0a, 0x05, 0x68, 0x61, 0x62, 0x69, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x06, 0x2e,
-	0x48, 0x61, 0x62, 0x69, 0x74, 0x52, 0x05, 0x68, 0x61, 0x62, 0x69, 0x74, 0x22, 0x2f, 0x0a, 0x11,
-	0x4c, 0x69, 0x73, 0x74, 0x48, 0x61, 0x62, 0x69, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x51, 0x0a,
-	0x12, 0x4c, 0x69, 0x73, 0x74, 0x48, 0x61, 0x62, 0x69, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x12,
-	0x1f, 0x0a, 0x06, 0x68, 0x61, 0x62, 0x69, 0x74, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x07, 0x2e, 0x48, 0x61, 0x62, 0x69, 0x74, 0x73, 0x52, 0x06, 0x68, 0x61, 0x62, 0x69, 0x74, 0x73,
-	0x42, 0x0b, 0x5a, 0x09, 0x2e, 0x2f, 0x68, 0x61, 0x62, 0x69, 0x74, 0x70, 0x62, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x2c, 0x0a, 0x12, 0x4c, 0x69,
+	0x73, 0x74, 0x48, 0x61, 0x62, 0x69, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x16, 0x0a, 0x06, 0x68, 0x61, 0x62, 0x69, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09,
+	0x52, 0x06, 0x68, 0x61, 0x62, 0x69, 0x74, 0x73, 0x42, 0x0b, 0x5a, 0x09, 0x2e, 0x2f, 0x68, 0x61,
+	0x62, 0x69, 0x74, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -503,29 +392,24 @@ func file_proto_habit_proto_rawDescGZIP() []byte {
 	return file_proto_habit_proto_rawDescData
 }
 
-var file_proto_habit_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_proto_habit_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_habit_proto_goTypes = []interface{}{
-	(*Habit)(nil),               // 0: Habit
-	(*Habits)(nil),              // 1: Habits
-	(*UpdateHabitRequest)(nil),  // 2: UpdateHabitRequest
-	(*UpdateHabitResponse)(nil), // 3: UpdateHabitResponse
-	(*GetHabitRequest)(nil),     // 4: GetHabitRequest
-	(*GetHabitResponse)(nil),    // 5: GetHabitResponse
-	(*ListHabitsRequest)(nil),   // 6: ListHabitsRequest
-	(*ListHabitsResponse)(nil),  // 7: ListHabitsResponse
-	nil,                         // 8: Habits.HabitsEntry
+	(*Habit)(nil),                // 0: Habit
+	(*Habits)(nil),               // 1: Habits
+	(*PerformHabitRequest)(nil),  // 2: PerformHabitRequest
+	(*PerformHabitResponse)(nil), // 3: PerformHabitResponse
+	(*ListHabitsRequest)(nil),    // 4: ListHabitsRequest
+	(*ListHabitsResponse)(nil),   // 5: ListHabitsResponse
+	nil,                          // 6: Habits.HabitsEntry
 }
 var file_proto_habit_proto_depIdxs = []int32{
-	8, // 0: Habits.habits:type_name -> Habits.HabitsEntry
-	0, // 1: UpdateHabitRequest.habit:type_name -> Habit
-	0, // 2: GetHabitResponse.habit:type_name -> Habit
-	1, // 3: ListHabitsResponse.habits:type_name -> Habits
-	0, // 4: Habits.HabitsEntry.value:type_name -> Habit
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	6, // 0: Habits.habits:type_name -> Habits.HabitsEntry
+	0, // 1: Habits.HabitsEntry.value:type_name -> Habit
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_habit_proto_init() }
@@ -559,7 +443,7 @@ func file_proto_habit_proto_init() {
 			}
 		}
 		file_proto_habit_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateHabitRequest); i {
+			switch v := v.(*PerformHabitRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -571,7 +455,7 @@ func file_proto_habit_proto_init() {
 			}
 		}
 		file_proto_habit_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateHabitResponse); i {
+			switch v := v.(*PerformHabitResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -583,30 +467,6 @@ func file_proto_habit_proto_init() {
 			}
 		}
 		file_proto_habit_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetHabitRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_proto_habit_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetHabitResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_proto_habit_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListHabitsRequest); i {
 			case 0:
 				return &v.state
@@ -618,7 +478,7 @@ func file_proto_habit_proto_init() {
 				return nil
 			}
 		}
-		file_proto_habit_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_proto_habit_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListHabitsResponse); i {
 			case 0:
 				return &v.state
@@ -637,7 +497,7 @@ func file_proto_habit_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_habit_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

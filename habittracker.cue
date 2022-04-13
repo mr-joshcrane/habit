@@ -47,8 +47,8 @@ dagger.#Plan & {
 				workdir: "./habit"
 				script: contents: #"""
 						export PATH="$PATH:$(go env GOPATH)/bin"
-						protoc -I proto/ --go_out=proto/ proto/store.proto
-						protoc proto/store.proto --go-grpc_out=proto/
+						protoc proto/*.proto --go_out=proto/
+						protoc proto/*.proto --go-grpc_out=proto/
 						go test ./...
 					"""#
 			}

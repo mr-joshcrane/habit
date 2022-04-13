@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"habit"
-	// "habit/stores/pbfilestore"
-	"habit/stores/networkstore"
 	"os"
+
+	"habit/stores/networkstore"
+	"habit"
 )
 
 func main() {
@@ -22,3 +22,4 @@ func main() {
 	}
 	habit.RunCLI(s)
 }
+

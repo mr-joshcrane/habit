@@ -12,7 +12,7 @@ message Battle {
 
 message BattleRequest {
     string code = 1;
-    GetHabitRequest habit = 2;
+    PerformHabitRequest habit = 2;
 }
 
 message BattleResponse {

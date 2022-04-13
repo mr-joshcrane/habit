@@ -1,13 +1,14 @@
 package pbfilestore
 
 import (
+	"fmt"
 	"habit"
 	"habit/proto/habitpb"
 	"io"
 	"os"
 	"time"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type PBFileStore struct {
@@ -15,13 +16,7 @@ type PBFileStore struct {
 	path string
 }
 
-func (s *PBFileStore) UpdateHabit(h *habit.Habit) error {
-	s.data[h.HabitName] = &habit.Habit{
-		Streak: h.Streak,
-		LastPerformed: h.LastPerformed,
-		HabitName: h.HabitName,
-		Username: h.Username,
-	}
+func (s *PBFileStore) UpdateHabits() error {
 	data, err := proto.Marshal(s.ToProto())
 	if err != nil {
 		return err
@@ -34,15 +29,15 @@ func (s *PBFileStore) UpdateHabit(h *habit.Habit) error {
 	return err
 }
 
-func (s PBFileStore) GetHabit(name, username string) (*habit.Habit, bool) {
-	h, ok := s.data[name]
+func (s *PBFileStore) GetHabit(username habit.Username, HabitId habit.HabitID) (*habit.Habit, bool) {
+	h, ok := s.data[string(HabitId)]
 	if ok {
 		return h, true
 	}
 	h = &habit.Habit{
 		Streak: 1,
 	}
-	s.data[name] = h
+	s.data[string(HabitId)] = h
 	return h, false
 }
 
@@ -88,7 +83,7 @@ func Open(path string) (*PBFileStore, error) {
 	}, nil
 }
 
-func (s PBFileStore) ToProto() *habitpb.Habits {
+func (s *PBFileStore) ToProto() *habitpb.Habits {
 	h := map[string]*habitpb.Habit{}
 	
 	for k, v := range s.data {
@@ -104,6 +99,30 @@ func (s PBFileStore) ToProto() *habitpb.Habits {
 	}
 }
 
-func (s PBFileStore) RegisterBattle(code string, h *habit.Habit) (string, error) {
+func (s *PBFileStore) RegisterBattle(code string, h *habit.Habit) (string, error) {
 	return "not implemented", nil
+}
+
+func (s *PBFileStore) GetBattleAssociations(*habit.Habit) []string {
+	return nil
+}
+
+func (s *PBFileStore) ListHabits(username habit.Username) []string {
+	fmt.Println("running list habits")
+	fmt.Println(s.data)
+	habits := []string{}
+	for k, v := range s.data {
+		fmt.Println(k)
+		fmt.Println(v)
+		fmt.Println(v.HabitName)
+		habits = append(habits,k)
+	}
+	return habits
+}
+
+func (s *PBFileStore) PerformHabit(username habit.Username, habitID habit.HabitID) int {
+	h, _ := s.GetHabit(username, habitID)
+	h.Perform()
+	s.UpdateHabits()
+	return h.Streak
 }

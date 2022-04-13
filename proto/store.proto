@@ -5,9 +5,8 @@ import "proto/battle.proto";
 import "proto/habit.proto";
 
 service HabitService {
-    rpc GetHabit(GetHabitRequest) returns (GetHabitResponse) {};
+    rpc PerformHabit(PerformHabitRequest) returns (PerformHabitResponse) {};
     rpc ListHabits(ListHabitsRequest) returns (ListHabitsResponse) {};
-    rpc UpdateHabit(UpdateHabitRequest) returns (UpdateHabitResponse) {};
     rpc RegisterBattle(BattleRequest) returns (BattleResponse) {};
     rpc GetBattleAssociations(BattleAssociationsRequest) returns (BattleAssociationsResponse) {};
 }

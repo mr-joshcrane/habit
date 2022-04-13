@@ -12,13 +12,13 @@ import (
 func TestNewHabitPerformedHasAStreakOfOne(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
-	username := "test"
+	username := habit.Username("test")
+	habitID := habit.HabitID("piano")
 	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tracker := habit.NewTracker(s)
-	h, ok := tracker.GetHabit("piano", username)
+	h, ok := s.GetHabit(username, habitID)
 	if ok {
 		t.Fatal("habit should not, but it does")
 	}
@@ -34,13 +34,13 @@ func TestNewHabitPerformedHasAStreakOfOne(t *testing.T) {
 func TestPerformingAHabitTwiceOnTheSameDayDoesNotIncreaseStreak(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
-	username := "test"
+	username := habit.Username("test")
+	habitID := habit.HabitID("piano")
 	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tracker := habit.NewTracker(s)
-	h, ok := tracker.GetHabit("piano", username)
+	h, ok := s.GetHabit(username, habitID)
 	if ok {
 		t.Fatal("habit should not exist, but it does")
 	}
@@ -57,13 +57,13 @@ func TestPerformingAHabitTwiceOnTheSameDayDoesNotIncreaseStreak(t *testing.T) {
 func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
-	username := "test"
+	username := habit.Username("test")
+	habitID := habit.HabitID("piano")
 	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tracker := habit.NewTracker(s)
-	h, ok := tracker.GetHabit("piano", username)
+	h, ok := s.GetHabit(username, habitID)
 	if ok {
 		t.Fatal("habit should not exist, but it does")
 	}
@@ -87,13 +87,13 @@ func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 func TestMissingADayResetsStreak(t *testing.T) {
 	t.Parallel()
 	path := t.TempDir() + "/" + t.Name()
-	username := "test"
+	username := habit.Username("test")
+	habitID := habit.HabitID("piano")
 	s, err := pbfilestore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tracker := habit.NewTracker(s)
-	h, ok := tracker.GetHabit("piano", username)
+	h, ok := s.GetHabit(username, habitID)
 	if ok {
 		t.Fatal("habit should not exist, but it does")
 	}
@@ -104,6 +104,55 @@ func TestMissingADayResetsStreak(t *testing.T) {
 
 	want := 1
 	got := h.Streak
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestBattlesWithLessThanTwoHabitsAreNotActive(t *testing.T) {
+	t.Parallel()
+	h1 := habit.Habit{
+		HabitName: "dance",
+		Streak: 22,
+		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
+		Username: "jeff",
+	}
+	
+	b := habit.Battle{
+		HabitOne: h1,
+		Code: "EXSGYY",
+		Winner: "",
+	}
+	want := false
+	got := b.IsActive()
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestBattlesWithTwoHabitsAreActive(t *testing.T) {
+	t.Parallel()
+	h1 := habit.Habit{
+		HabitName: "dance",
+		Streak: 22,
+		LastPerformed: monday(),
+		Username: "jeff",
+	}
+	h2 := habit.Habit{
+		HabitName: "sing",
+		Streak: 11,
+		LastPerformed: tuesday(),
+		Username: "pete",
+	}
+	
+	b := habit.Battle{
+		HabitOne: h1,
+		HabitTwo: h2,
+		Code: "EXSGYY",
+		Winner: "",
+	}
+	want := true
+	got := b.IsActive()
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}

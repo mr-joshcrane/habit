@@ -13,7 +13,7 @@ import (
 )
 
 type NetworkStore struct {
-	conn *grpc.ClientConn
+	conn   *grpc.ClientConn
 	client habitpb.HabitServiceClient
 }
 
@@ -40,77 +40,38 @@ func (s *NetworkStore) Close() {
 	s.conn.Close()
 }
 
-func (s *NetworkStore) UpdateHabit(habit *habit.Habit) error {
-	h := &habitpb.Habit{
-		HabitName: habit.HabitName,
-		Streak: int32(habit.Streak),
-		LastPerformed: habit.LastPerformed.Unix(),
-		User: habit.Username,
-	}
-	req := habitpb.UpdateHabitRequest{
-		Habit: h,
-	}
-	_, err := s.client.UpdateHabit(context.TODO(), &req)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s NetworkStore) GetHabit(habitname, username string) (*habit.Habit, bool) {
-	req := habitpb.GetHabitRequest{
-		Habitname: habitname,
-		Username: username,
-	}
-	h, err := s.client.GetHabit(context.TODO(), &req)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return &habit.Habit{
-		Streak: int(h.Habit.GetStreak()),
-		LastPerformed: time.Unix(h.Habit.GetLastPerformed(), 0),
-		Username: username,
-		HabitName: habitname,
-	}, h.GetOk()
-}
-
-
-func (s NetworkStore) ListHabits(username string) []string {
+func (s *NetworkStore) ListHabits(username habit.Username) []string {
 	req := habitpb.ListHabitsRequest{
-		Username: username,
+		Username: string(username),
 	}
 	h, err := s.client.ListHabits(context.TODO(), &req)
 	if err != nil {
 		fmt.Println(err)
 	}
-	habits := make([]string, 0, len(h.Habits.Habits))
-	for _, v := range h.Habits.Habits {
-		habits = append(habits, v.HabitName)
-	}
-	return habits
+	return h.Habits
 }
 
-func (s NetworkStore) RegisterBattle(code string, h *habit.Habit ) (string, error) {
+func (s *NetworkStore) RegisterBattle(code string, h *habit.Habit) (string, error) {
 	req := habitpb.BattleRequest{
 		Code: code,
-		Habit: &habitpb.GetHabitRequest{
+		Habit: &habitpb.PerformHabitRequest{
 			Habitname: h.HabitName,
-			Username: h.Username,
+			Username:  h.Username,
 		},
 	}
 	resp, err := s.client.RegisterBattle(context.TODO(), &req)
 	if err != nil {
 		return "", err
 	}
-	return resp.Battle.GetCode(), err 
+	return resp.Battle.GetCode(), err
 }
 
-func (s NetworkStore) GetBattleAssociations(h *habit.Habit) []string  {
+func (s *NetworkStore) GetBattleAssociations(h *habit.Habit) []string {
 	habit := &habitpb.Habit{
-		HabitName: h.HabitName,
-		Streak: int32(h.Streak),
+		HabitName:     h.HabitName,
+		Streak:        int32(h.Streak),
 		LastPerformed: h.LastPerformed.Unix(),
-		User: h.Username,
+		User:          h.Username,
 	}
 	req := habitpb.BattleAssociationsRequest{
 		Habit: habit,
@@ -124,4 +85,16 @@ func (s NetworkStore) GetBattleAssociations(h *habit.Habit) []string  {
 		codes = append(codes, v.Code)
 	}
 	return codes
+}
+
+func (s *NetworkStore) PerformHabit(username habit.Username, habitID habit.HabitID) int {
+	req := habitpb.PerformHabitRequest{
+		Username: string(username),
+		Habitname: string(habitID),
+	}
+	resp, err := s.client.PerformHabit(context.TODO(), &req)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return int(resp.GetStreak())
 }

@@ -12,22 +12,15 @@ message Habit {
 message Habits {
     map<string, Habit> habits = 1;
 }
-message UpdateHabitRequest {
-    Habit habit = 1;
-};
 
-message UpdateHabitResponse {
-    string message = 2;
-};
-
-message GetHabitRequest {
+message PerformHabitRequest {
     string habitname = 1;
     string username = 2;
 }
 
-message GetHabitResponse {
+message PerformHabitResponse {
     bool ok = 1;
-    Habit habit = 2;
+    int32 streak = 2;
 }
 
 message ListHabitsRequest {
@@ -35,7 +28,6 @@ message ListHabitsRequest {
 }
 
 message ListHabitsResponse {
-    string username = 1;
-    Habits habits = 2;
+    repeated string habits = 2;
 }
 

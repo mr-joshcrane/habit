@@ -7,8 +7,8 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"time"
-
+	"habit"
+	"habit/stores/pbfilestore"
 	// "github.com/google/uuid"
 	"google.golang.org/grpc"
 )
@@ -17,9 +17,7 @@ type UserData map[string]*habitpb.Habit
 
 type HabitService struct {
 	habitpb.UnimplementedHabitServiceServer
-	userdata map[string]UserData
-	battles  map[string]*habitpb.Battle
-	battleAssociations map[*habitpb.Habit][]*habitpb.Battle
+	store habit.Store
 }
 
 func ListenAndServe(addr string) error {
@@ -28,163 +26,100 @@ func ListenAndServe(addr string) error {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	store, err := pbfilestore.Open("store")
+	if err != nil {
+		log.Fatalf("failed to open store: %v", err)
+	}
 
 	grpc := grpc.NewServer()
 	s := &HabitService{
-		userdata: map[string]UserData{},
-		battles:  map[string]*habitpb.Battle{},
-		battleAssociations: map[*habitpb.Habit][]*habitpb.Battle{},
+		store: store,
 	}
 	habitpb.RegisterHabitServiceServer(grpc, s)
 	return grpc.Serve(lis)
 }
 
-func (s *HabitService) GetHabit(ctx context.Context, req *habitpb.GetHabitRequest) (*habitpb.GetHabitResponse, error) {
-	store, ok := s.userdata[req.GetUsername()]
-	if !ok {
-		return &habitpb.GetHabitResponse{
-			Habit: nil,
-			Ok:    false,
-		}, nil
-	}
-	h, ok := store[req.GetHabitname()]
-	if !ok {
-		return &habitpb.GetHabitResponse{
-			Habit: nil,
-			Ok:    false,
-		}, nil
-	}
-	return &habitpb.GetHabitResponse{
-		Habit: h,
-		Ok:    true,
+func (s *HabitService) PerformHabit(ctx context.Context, req *habitpb.PerformHabitRequest) (*habitpb.PerformHabitResponse, error) {
+	username := habit.Username(req.GetUsername())
+	habitID := habit.HabitID(req.GetHabitname())
+	streak := s.store.PerformHabit(username, habitID)
+	return &habitpb.PerformHabitResponse{
+		Streak: int32(streak),
+		Ok: true,
 	}, nil
 }
 
 func (s *HabitService) ListHabits(ctx context.Context, req *habitpb.ListHabitsRequest) (*habitpb.ListHabitsResponse, error) {
-	habits, ok := s.userdata[req.GetUsername()]
-	if !ok {
-		return &habitpb.ListHabitsResponse{
-			Username: req.Username,
-			Habits: &habitpb.Habits{},
-		}, nil
+	username := habit.Username(req.GetUsername())
+	habits := s.store.ListHabits(username)
+	resp := &habitpb.ListHabitsResponse{
+		Habits: habits,
 	}
-	return &habitpb.ListHabitsResponse{
-		Username: req.Username,
-		Habits: &habitpb.Habits{
-			Habits: habits,
-		},
-	}, nil
-}
-
-func (s *HabitService) UpdateHabit(ctx context.Context, req *habitpb.UpdateHabitRequest) (*habitpb.UpdateHabitResponse, error) {
-	fmt.Println(s.userdata)
-	fmt.Println(s.battles)
-	if req.Habit.GetHabitName() == "" {
-		return nil, fmt.Errorf("habitname is required")
-	}
-	if req.Habit.GetUser() == "" {
-		return nil, fmt.Errorf("username is required")
-	}
-	// if req.Habit.Id == "" {
-	// 	req.Habit.Id = uuid.New().String()
-	// }
-	_, ok := s.userdata[req.Habit.GetUser()]
-	if !ok {
-		s.userdata[req.Habit.GetUser()] = map[string]*habitpb.Habit{}
-		s.userdata[req.Habit.GetUser()][req.Habit.HabitName] = req.Habit
-		s.userdata[req.Habit.GetUser()][req.Habit.HabitName].Streak = 1
-		return &habitpb.UpdateHabitResponse{
-			Message: "New store created. Habit UPSERTED successfully",
-		}, nil
-	}
-	_, ok = s.userdata[req.Habit.GetUser()][req.Habit.GetHabitName()]
-	if !ok {
-		s.userdata[req.Habit.GetUser()][req.Habit.GetHabitName()] = req.Habit
-		s.userdata[req.Habit.GetUser()][req.Habit.GetHabitName()].Streak = 1
-		return &habitpb.UpdateHabitResponse{
-			Message: "Habit UPSERTED successfully",
-		}, nil
-	}
-	store := s.userdata[req.Habit.GetUser()]
-	habit := store[req.Habit.GetHabitName()]
-
-	// ???
-
-	requestTimestamp := time.Unix(req.Habit.GetLastPerformed(), 0)
-	lastRecordedTimestamp := time.Unix(habit.GetLastPerformed(), 0).Day()
-	yesterday := requestTimestamp.AddDate(0, 0, -1).Day()
-	if lastRecordedTimestamp == yesterday {
-		habit.Streak++
-	} else if requestTimestamp.Day() != lastRecordedTimestamp {
-		habit.Streak = 1
-	}
-	habit.LastPerformed = req.Habit.GetLastPerformed()
-
-	return &habitpb.UpdateHabitResponse{
-		Message: "Habit UPDATED successfully",
-	}, nil
+	return resp, nil
 }
 
 func (s *HabitService) RegisterBattle(ctx context.Context, req *habitpb.BattleRequest) (*habitpb.BattleResponse, error) {
-	resp, err := s.GetHabit(ctx, req.Habit)
-	h := resp.Habit
-	if err != nil {
-		return nil, err
-	}
-	b, ok := s.battles[req.GetCode()]
-	if !ok {
-		code := generateBattleCode(6)
-		s.battles[code] = &habitpb.Battle{
-			HabitOne: h,
-			Code:     code,
-		}
-		b := s.battles[code]
-		s.battleAssociations[h] = append(s.battleAssociations[h], b)
-		fmt.Println(s.battleAssociations)
-		return &habitpb.BattleResponse{
-			Battle: &habitpb.Battle{
-				Code:     b.GetCode(),
-				HabitOne: b.GetHabitOne(),
-				HabitTwo: b.GetHabitTwo(),
-				Winner:   b.GetWinner(),
-			},
-			Ok:      true,
-			Message: "new battle created",
-		}, nil
-	}
-	if b.HabitOne == h || b.HabitTwo == h {
-		return &habitpb.BattleResponse{
-			Battle:  b,
-			Ok:      true,
-			Message: "battle has begun!",
-		}, nil
-	}
-	if b.HabitTwo != nil {
-		return nil, fmt.Errorf("battle with this code already has two participants")
-	}
-	b.HabitTwo = h
-	s.battleAssociations[h] = append(s.battleAssociations[h], b)
-	fmt.Println(s.battleAssociations)
-	return &habitpb.BattleResponse{
-		Battle:  b,
-		Ok:      true,
-		Message: "battle has begun!",
-	}, nil
+	return nil, nil
+	// resp, err := s.GetHabit(ctx, req.Habit)
+	// h := resp.Habit
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// b, ok := s.battles[req.GetCode()]
+	// if !ok {
+	// 	code := generateBattleCode(6)
+	// 	s.battles[code] = &habitpb.Battle{
+	// 		HabitOne: h,
+	// 		Code:     code,
+	// 	}
+	// 	b := s.battles[code]
+	// 	s.battleAssociations[h] = append(s.battleAssociations[h], b)
+	// 	fmt.Println(s.battleAssociations)
+	// 	return &habitpb.BattleResponse{
+	// 		Battle: &habitpb.Battle{
+	// 			Code:     b.GetCode(),
+	// 			HabitOne: b.GetHabitOne(),
+	// 			HabitTwo: b.GetHabitTwo(),
+	// 			Winner:   b.GetWinner(),
+	// 		},
+	// 		Ok:      true,
+	// 		Message: "new battle created",
+	// 	}, nil
+	// }
+	// if b.HabitOne == h || b.HabitTwo == h {
+	// 	return &habitpb.BattleResponse{
+	// 		Battle:  b,
+	// 		Ok:      true,
+	// 		Message: "battle has begun!",
+	// 	}, nil
+	// }
+	// if b.HabitTwo != nil {
+	// 	return nil, fmt.Errorf("battle with this code already has two participants")
+	// }
+	// b.HabitTwo = h
+	// s.battleAssociations[h] = append(s.battleAssociations[h], b)
+	// fmt.Println(s.battleAssociations)
+	// return &habitpb.BattleResponse{
+	// 	Battle:  b,
+	// 	Ok:      true,
+	// 	Message: "battle has begun!",
+	// }, nil
 }
 
 func (s *HabitService) GetBattleAssociations(ctx context.Context, req *habitpb.BattleAssociationsRequest) (*habitpb.BattleAssociationsResponse, error) {
-	hreq := &habitpb.GetHabitRequest{
-		Habitname: req.GetHabit().GetHabitName(),
-		Username: req.GetHabit().GetUser(),
-	}
-	h, err := s.GetHabit(ctx, hreq)
-	if err != nil {
-		return nil, err
-	}
-	return &habitpb.BattleAssociationsResponse{
-		Habit: h.Habit,
-		Battle: s.battleAssociations[h.Habit],
-	}, nil
+	return nil, nil
+	// hreq := &habitpb.GetHabitRequest{
+	// 	Habitname: req.GetHabit().GetHabitName(),
+	// 	Username: req.GetHabit().GetUser(),
+	// }
+	// h, err := s.GetHabit(ctx, hreq)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// return &habitpb.BattleAssociationsResponse{
+	// 	Habit: h.Habit,
+	// 	Battle: s.battleAssociations[h.Habit],
+	// }, nil
 }
 
 var letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -196,3 +131,4 @@ func generateBattleCode(n int) string {
 	}
 	return string(b)
 }
+
