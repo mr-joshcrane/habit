@@ -3,12 +3,14 @@ package server
 import (
 	"context"
 	"fmt"
+	"habit"
 	"habit/proto/habitpb"
+	"habit/stores/dynamodbstore"
+	// "habit/stores/pbfilestore"
 	"log"
 	"math/rand"
 	"net"
-	"habit"
-	"habit/stores/pbfilestore"
+
 	// "github.com/google/uuid"
 	"google.golang.org/grpc"
 )
@@ -20,13 +22,18 @@ type HabitService struct {
 	store habit.Store
 }
 
-func ListenAndServe(addr string) error {
+func ListenAndServe(addr string, tablename string) error {
 	fmt.Println("Starting server")
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	store, err := pbfilestore.Open("store")
+	// store, err := pbfilestore.Open("store")
+	// if err != nil {
+	// 	log.Fatalf("failed to open store: %v", err)
+	// }
+
+	store, err := dynamodbstore.Open(addr, tablename)
 	if err != nil {
 		log.Fatalf("failed to open store: %v", err)
 	}
