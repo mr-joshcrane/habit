@@ -8,7 +8,6 @@ import (
 	"habit/stores/dynamodbstore"
 	// "habit/stores/pbfilestore"
 	"log"
-	"math/rand"
 	"net"
 
 	// "github.com/google/uuid"
@@ -49,7 +48,10 @@ func ListenAndServe(addr string, tablename string) error {
 func (s *HabitService) PerformHabit(ctx context.Context, req *habitpb.PerformHabitRequest) (*habitpb.PerformHabitResponse, error) {
 	username := habit.Username(req.GetUsername())
 	habitID := habit.HabitID(req.GetHabitname())
-	streak := s.store.PerformHabit(username, habitID)
+	streak, err := s.store.PerformHabit(username, habitID)
+	if err != nil {
+		return nil, err
+	}
 	return &habitpb.PerformHabitResponse{
 		Streak: int32(streak),
 		Ok: true,
@@ -66,7 +68,17 @@ func (s *HabitService) ListHabits(ctx context.Context, req *habitpb.ListHabitsRe
 }
 
 func (s *HabitService) RegisterBattle(ctx context.Context, req *habitpb.BattleRequest) (*habitpb.BattleResponse, error) {
-	return nil, nil
+	habitID := habit.HabitID(req.GetHabitID())
+	code := req.GetCode()
+	code, err := s.store.RegisterBattle(code, habitID)
+	if err != nil {
+		return nil, err
+	}
+	return &habitpb.BattleResponse{
+		Ok: true,
+		Message: "joined successfully",
+		Code: code,
+	}, nil
 	// resp, err := s.GetHabit(ctx, req.Habit)
 	// h := resp.Habit
 	// if err != nil {
@@ -114,7 +126,9 @@ func (s *HabitService) RegisterBattle(ctx context.Context, req *habitpb.BattleRe
 }
 
 func (s *HabitService) GetBattleAssociations(ctx context.Context, req *habitpb.BattleAssociationsRequest) (*habitpb.BattleAssociationsResponse, error) {
-	return nil, nil
+	return &habitpb.BattleAssociationsResponse{
+		Codes: []string{},
+	}, nil
 	// hreq := &habitpb.GetHabitRequest{
 	// 	Habitname: req.GetHabit().GetHabitName(),
 	// 	Username: req.GetHabit().GetUser(),
@@ -127,15 +141,5 @@ func (s *HabitService) GetBattleAssociations(ctx context.Context, req *habitpb.B
 	// 	Habit: h.Habit,
 	// 	Battle: s.battleAssociations[h.Habit],
 	// }, nil
-}
-
-var letters = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func generateBattleCode(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
 }
 

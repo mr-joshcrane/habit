@@ -12,20 +12,19 @@ message Battle {
 
 message BattleRequest {
     string code = 1;
-    PerformHabitRequest habit = 2;
+    string habitID = 2;
 }
 
 message BattleResponse {
-   Battle battle = 1;
-   bool ok = 2;
-   string message = 3;
+    string code = 1;
+    bool ok = 2;
+    string message = 3;
 }
 
 message BattleAssociationsRequest{
-    Habit habit = 1;
+    string habitID = 1;
 }
 
 message BattleAssociationsResponse {
-    Habit habit = 1;
-    repeated Battle battle = 2;
+    repeated string codes = 2;
 }

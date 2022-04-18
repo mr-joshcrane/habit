@@ -51,50 +51,37 @@ func (s *NetworkStore) ListHabits(username habit.Username) []string {
 	return h.Habits
 }
 
-func (s *NetworkStore) RegisterBattle(code string, h *habit.Habit) (string, error) {
+func (s *NetworkStore) RegisterBattle(code string, habitID habit.HabitID) (string, error) {
 	req := habitpb.BattleRequest{
 		Code: code,
-		Habit: &habitpb.PerformHabitRequest{
-			Habitname: h.HabitName,
-			Username:  h.Username,
-		},
 	}
 	resp, err := s.client.RegisterBattle(context.TODO(), &req)
 	if err != nil {
 		return "", err
 	}
-	return resp.Battle.GetCode(), err
+	return resp.GetCode(), err
 }
 
-func (s *NetworkStore) GetBattleAssociations(h *habit.Habit) []string {
-	habit := &habitpb.Habit{
-		HabitName:     h.HabitName,
-		Streak:        int32(h.Streak),
-		LastPerformed: h.LastPerformed.Unix(),
-		User:          h.Username,
-	}
+func (s *NetworkStore) GetBattleAssociations(habitID habit.HabitID) ([]string, error) {	
 	req := habitpb.BattleAssociationsRequest{
-		Habit: habit,
+		HabitID: string(habitID),
 	}
-	associations, err := s.client.GetBattleAssociations(context.TODO(), &req)
+	resp, err := s.client.GetBattleAssociations(context.TODO(), &req)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
-	codes := []string{}
-	for _, v := range associations.Battle {
-		codes = append(codes, v.Code)
-	}
-	return codes
+	fmt.Print(resp)
+	return resp.Codes, nil
 }
 
-func (s *NetworkStore) PerformHabit(username habit.Username, habitID habit.HabitID) int {
+func (s *NetworkStore) PerformHabit(username habit.Username, habitID habit.HabitID) (int, error) {
 	req := habitpb.PerformHabitRequest{
 		Username: string(username),
 		Habitname: string(habitID),
 	}
 	resp, err := s.client.PerformHabit(context.TODO(), &req)
 	if err != nil {
-		fmt.Println(err)
+		return 0, err
 	}
-	return int(resp.GetStreak())
+	return int(resp.GetStreak()), nil
 }

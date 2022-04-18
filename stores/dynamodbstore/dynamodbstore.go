@@ -47,22 +47,25 @@ func (s *DynamoDBStore) ListHabits(username habit.Username) []string {
 	return results
 }
 
-func (s *DynamoDBStore) RegisterBattle(code string, h *habit.Habit) (string, error) {
+func (s *DynamoDBStore) RegisterBattle(code string, habitID habit.HabitID) (string, error) {
 	return "", nil
 }
 
-func (s *DynamoDBStore) GetBattleAssociations(h *habit.Habit) []string {
-	return []string{}
+func (s *DynamoDBStore) GetBattleAssociations(habitID habit.HabitID) ([]string, error) {
+	return []string{}, nil
 }
 
-func (s *DynamoDBStore) PerformHabit(username habit.Username, habitID habit.HabitID) int {
-	h := s.GetHabit(username, habitID)
+func (s *DynamoDBStore) PerformHabit(username habit.Username, habitID habit.HabitID) (int, error) {
+	h, err := s.GetHabit(username, habitID)
+	if err != nil {
+		return 0, err
+	}
 	h.Perform()
 	s.UpdateHabit(h)
-	return h.Streak
+	return h.Streak, nil
 }
 
-func (s *DynamoDBStore) GetHabit(username habit.Username, habitID habit.HabitID) *habit.Habit {
+func (s *DynamoDBStore) GetHabit(username habit.Username, habitID habit.HabitID) (*habit.Habit, error) {
 	itemMap := map[string]types.AttributeValue{
 		"PK": &types.AttributeValueMemberS{Value: string(username)},
 		"SK": &types.AttributeValueMemberS{Value: string(habitID)},
@@ -73,20 +76,20 @@ func (s *DynamoDBStore) GetHabit(username habit.Username, habitID habit.HabitID)
 	}
 	resp, err := s.client.GetItem(context.TODO(), &command)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 	if resp.Item == nil {
 		fmt.Println("item not found")
 		return &habit.Habit{
-			HabitName: string(habitID),
 			Username: string(username),
+			HabitName: string(habitID),
 			Streak: 1,
-		}
+		}, nil
 	}
 	var h habit.Habit
 	attributevalue.Unmarshal(resp.Item["value"], &h)
 	fmt.Println(h.Streak)
-	return &h
+	return &h, nil
 }
 
 func (s *DynamoDBStore) UpdateHabit(h *habit.Habit) error {

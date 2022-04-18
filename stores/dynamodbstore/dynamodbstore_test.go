@@ -34,7 +34,10 @@ func TestCanRetriveAHabitPerformedThreeTimes(t *testing.T) {
 		LastPerformed: wednesday(),
 		Streak:        3,
 	}
-	got := store.GetHabit(username, habitID)
+	got, err := store.GetHabit(username, habitID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
