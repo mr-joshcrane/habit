@@ -109,52 +109,119 @@ func TestMissingADayResetsStreak(t *testing.T) {
 	}
 }
 
-func TestBattlesWithLessThanTwoHabitsAreNotActive(t *testing.T) {
+func TestCreateChallengeWithNoInputReturnsNewCode(t *testing.T) {
 	t.Parallel()
 	h1 := habit.Habit{
-		HabitName: "dance",
-		Streak: 22,
+		HabitName:     "habit",
+		Streak:        22,
 		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
-		Username: "jeff",
+		Username:      "test",
 	}
-	
-	b := habit.Battle{
-		HabitOne: h1,
-		Code: "EXSGYY",
-		Winner: "",
-	}
-	want := false
-	got := b.IsActive()
+	habit.BattleCodeGenerator = func() habit.BattleCode { return habit.BattleCode("AAAAA") }
+	want := habit.BattleCode("AAAAA")
+	battle := habit.CreateChallenge(&h1, "")
+	got := battle.Code
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
 }
 
-func TestBattlesWithTwoHabitsAreActive(t *testing.T) {
+func TestCreateChallengeWithCodeReturnsCode(t *testing.T) {
 	t.Parallel()
 	h1 := habit.Habit{
-		HabitName: "dance",
-		Streak: 22,
-		LastPerformed: monday(),
-		Username: "jeff",
+		HabitName:     "habit",
+		Streak:        22,
+		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
+		Username:      "test",
 	}
-	h2 := habit.Habit{
-		HabitName: "sing",
-		Streak: 11,
-		LastPerformed: tuesday(),
-		Username: "pete",
-	}
-	
-	b := habit.Battle{
-		HabitOne: h1,
-		HabitTwo: h2,
-		Code: "EXSGYY",
-		Winner: "",
-	}
-	want := true
-	got := b.IsActive()
+	want := habit.BattleCode("ZINGO")
+	battle := habit.CreateChallenge(&h1, "ZINGO")
+	got := battle.Code
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestJoinBattleFailsIfAlreadyEnrolled(t *testing.T) {
+	t.Parallel()
+	h1 := habit.Habit{
+		HabitName:     "habit",
+		Streak:        22,
+		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
+		Username:      "test",
+	}
+	battle := habit.CreateChallenge(&h1, "ZINGO")
+	_, err := habit.JoinBattle(&h1, battle)
+	if err == nil {
+		t.Fatal("expected to fail but did not")
+	}
+}
+
+func TestJoinBattleFailsIfBattleIsFull(t *testing.T) {
+	t.Parallel()
+	h1 := habit.Habit{
+		HabitName:     "habit",
+		Streak:        22,
+		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
+		Username:      "test",
+	}
+	h2 := habit.Habit{
+		HabitName:     "habit two",
+		Streak:        22,
+		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
+		Username:      "test two",
+	}
+	h3 := habit.Habit{
+		HabitName:     "habit three",
+		Streak:        22,
+		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
+		Username:      "test three",
+	}
+	battle := habit.CreateChallenge(&h1, "ZINGO")
+	_, err := habit.JoinBattle(&h2, battle)
+	if err != nil {
+		t.Fatalf("did not expect second habit to fail to join challenge")
+	}
+	_, err = habit.JoinBattle(&h3, battle)
+	if err == nil {
+		t.Fatal("expected to fail but did not")
+	}
+}
+
+func TestDetermineWinner(t *testing.T) {
+	t.Parallel()
+	h1 := habit.Habit{
+		HabitName:     "dance",
+		Streak:        22,
+		LastPerformed: mondayNight(),
+		Username:      "jeff",
+	}
+	h2 := habit.Habit{
+		HabitName:     "samba",
+		Streak:        22,
+		LastPerformed: mondayNight(),
+		Username:      "gary",
+	}
+
+	b := habit.Battle{
+		HabitOne: &h1,
+		HabitTwo: &h2,
+		Code:     "EXSGYY",
+		Winner:   "",
+	}
+
+	habit.Now = tuesday
+	winner := b.DetermineWinner()
+	if winner != "" {
+		t.Fatalf("should not have declared a winner as there is still time remaining to perform the habit")
+	}
+	habit.Now = tuesdayNight
+	h1.Perform()
+
+	habit.Now = wednesday
+	winner = b.DetermineWinner()
+	if winner != "jeff" {
+		t.Fatalf("jeff should have won, gary's streak lapsed: winner was %s", winner)
 	}
 }
 
@@ -162,16 +229,18 @@ func monday() time.Time {
 	return time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC)
 }
 
+func mondayNight() time.Time {
+	return time.Date(2020, time.April, 23, 20, 0, 0, 0, time.UTC)
+}
+
 func tuesday() time.Time {
 	return time.Date(2020, time.April, 24, 0, 0, 0, 0, time.UTC)
+}
+
+func tuesdayNight() time.Time {
+	return time.Date(2020, time.April, 24, 20, 0, 0, 0, time.UTC)
 }
 
 func wednesday() time.Time {
 	return time.Date(2020, time.April, 25, 0, 0, 0, 0, time.UTC)
 }
-
-// Testing network store
-
-// Contract for a store, for things where we dont care how, its in habit
-
-// Implimentation tests concrete gotchya pbfilestore
