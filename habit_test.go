@@ -18,9 +18,9 @@ func TestNewHabitPerformedHasAStreakOfOne(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	h, ok := s.GetHabit(username, habitID)
-	if ok {
-		t.Fatal("habit should not, but it does")
+	h, err := s.GetHabit(username, habitID)
+	if err != nil {
+		t.Fatal("habit should exist, but it does")
 	}
 	habit.Now = monday
 	h.Perform()
@@ -40,8 +40,8 @@ func TestPerformingAHabitTwiceOnTheSameDayDoesNotIncreaseStreak(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	h, ok := s.GetHabit(username, habitID)
-	if ok {
+	h, err := s.GetHabit(username, habitID)
+	if err != nil {
 		t.Fatal("habit should not exist, but it does")
 	}
 	habit.Now = monday
@@ -63,8 +63,8 @@ func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	h, ok := s.GetHabit(username, habitID)
-	if ok {
+	h, err := s.GetHabit(username, habitID)
+	if err != nil  {
 		t.Fatal("habit should not exist, but it does")
 	}
 
@@ -93,8 +93,8 @@ func TestMissingADayResetsStreak(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	h, ok := s.GetHabit(username, habitID)
-	if ok {
+	h, err := s.GetHabit(username, habitID)
+	if err != nil {
 		t.Fatal("habit should not exist, but it does")
 	}
 	h.Streak = 100
@@ -137,6 +137,55 @@ func TestCreateChallengeWithCodeReturnsCode(t *testing.T) {
 	want := habit.BattleCode("ZINGO")
 	battle := habit.CreateChallenge(&h1, "ZINGO")
 	got := battle.Code
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestBattlesWithLessThanTwoHabitsArePending(t *testing.T) {
+	t.Parallel()
+	h1 := habit.Habit{
+		HabitName:     "dance",
+		Streak:        22,
+		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
+		Username:      "jeff",
+	}
+
+	b := habit.Battle{
+		HabitOne: &h1,
+		Code:     "EXSGYY",
+		Winner:   "",
+	}
+	want := true
+	got := b.IsPending()
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestBattlesWithTwoHabitsAreNotPending(t *testing.T) {
+	t.Parallel()
+	h1 := habit.Habit{
+		HabitName:     "dance",
+		Streak:        22,
+		LastPerformed: monday(),
+		Username:      "jeff",
+	}
+	h2 := habit.Habit{
+		HabitName:     "sing",
+		Streak:        11,
+		LastPerformed: tuesday(),
+		Username:      "pete",
+	}
+
+	b := habit.Battle{
+		HabitOne: &h1,
+		HabitTwo: &h2,
+		Code:     "EXSGYY",
+		Winner:   "",
+	}
+	want := false
+	got := b.IsPending()
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}

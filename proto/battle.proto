@@ -13,16 +13,19 @@ message Battle {
 message BattleRequest {
     string code = 1;
     string habitID = 2;
+    string username = 3;
 }
 
 message BattleResponse {
     string code = 1;
     bool ok = 2;
     string message = 3;
+    bool pending = 4;
 }
 
 message BattleAssociationsRequest{
     string habitID = 1;
+    string username = 2;
 }
 
 message BattleAssociationsResponse {

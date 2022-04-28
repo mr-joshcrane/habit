@@ -6,6 +6,7 @@ import (
 	"habit"
 	"habit/proto/habitpb"
 	"habit/stores/dynamodbstore"
+
 	// "habit/stores/pbfilestore"
 	"log"
 	"net"
@@ -14,11 +15,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-type UserData map[string]*habitpb.Habit
-
 type HabitService struct {
 	habitpb.UnimplementedHabitServiceServer
-	store habit.Store
+    habit.LocalTracker
 }
 
 func ListenAndServe(addr string, tablename string) error {
@@ -27,19 +26,13 @@ func ListenAndServe(addr string, tablename string) error {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	// store, err := pbfilestore.Open("store")
-	// if err != nil {
-	// 	log.Fatalf("failed to open store: %v", err)
-	// }
 
-	store, err := dynamodbstore.Open(addr, tablename)
-	if err != nil {
-		log.Fatalf("failed to open store: %v", err)
-	}
+	store := dynamodbstore.Open(addr, tablename)
 
+	tracker := habit.NewTracker(store)
 	grpc := grpc.NewServer()
 	s := &HabitService{
-		store: store,
+		LocalTracker: *tracker,
 	}
 	habitpb.RegisterHabitServiceServer(grpc, s)
 	return grpc.Serve(lis)
@@ -48,98 +41,59 @@ func ListenAndServe(addr string, tablename string) error {
 func (s *HabitService) PerformHabit(ctx context.Context, req *habitpb.PerformHabitRequest) (*habitpb.PerformHabitResponse, error) {
 	username := habit.Username(req.GetUsername())
 	habitID := habit.HabitID(req.GetHabitname())
-	streak, err := s.store.PerformHabit(username, habitID)
+	streak, err := s.LocalTracker.PerformHabit(username, habitID)
 	if err != nil {
 		return nil, err
 	}
 	return &habitpb.PerformHabitResponse{
 		Streak: int32(streak),
-		Ok: true,
+		Ok:     true,
 	}, nil
 }
 
-func (s *HabitService) ListHabits(ctx context.Context, req *habitpb.ListHabitsRequest) (*habitpb.ListHabitsResponse, error) {
+func (s *HabitService) DisplayHabits(ctx context.Context, req *habitpb.ListHabitsRequest) (*habitpb.ListHabitsResponse, error) {
 	username := habit.Username(req.GetUsername())
-	habits := s.store.ListHabits(username)
+	habits, err := s.LocalTracker.Store.ListHabits(username)
+	if err != nil {
+		return nil, err
+	}
+	h := []string{}
+	for _, v := range habits {
+		h = append(h, v.HabitName)
+	}
 	resp := &habitpb.ListHabitsResponse{
-		Habits: habits,
+		Habits: h,
 	}
 	return resp, nil
 }
 
 func (s *HabitService) RegisterBattle(ctx context.Context, req *habitpb.BattleRequest) (*habitpb.BattleResponse, error) {
 	habitID := habit.HabitID(req.GetHabitID())
-	code := req.GetCode()
-	code, err := s.store.RegisterBattle(code, habitID)
+	username := habit.Username(req.GetUsername())
+	code := habit.BattleCode(req.GetCode())
+
+	code, pending, err := s.LocalTracker.RegisterBattle(code, username, habitID)
+	fmt.Println(err)
 	if err != nil {
 		return nil, err
 	}
 	return &habitpb.BattleResponse{
-		Ok: true,
+		Ok:      true,
 		Message: "joined successfully",
-		Code: code,
+		Code:    string(code),
+		Pending: bool(pending),
 	}, nil
-	// resp, err := s.GetHabit(ctx, req.Habit)
-	// h := resp.Habit
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// b, ok := s.battles[req.GetCode()]
-	// if !ok {
-	// 	code := generateBattleCode(6)
-	// 	s.battles[code] = &habitpb.Battle{
-	// 		HabitOne: h,
-	// 		Code:     code,
-	// 	}
-	// 	b := s.battles[code]
-	// 	s.battleAssociations[h] = append(s.battleAssociations[h], b)
-	// 	fmt.Println(s.battleAssociations)
-	// 	return &habitpb.BattleResponse{
-	// 		Battle: &habitpb.Battle{
-	// 			Code:     b.GetCode(),
-	// 			HabitOne: b.GetHabitOne(),
-	// 			HabitTwo: b.GetHabitTwo(),
-	// 			Winner:   b.GetWinner(),
-	// 		},
-	// 		Ok:      true,
-	// 		Message: "new battle created",
-	// 	}, nil
-	// }
-	// if b.HabitOne == h || b.HabitTwo == h {
-	// 	return &habitpb.BattleResponse{
-	// 		Battle:  b,
-	// 		Ok:      true,
-	// 		Message: "battle has begun!",
-	// 	}, nil
-	// }
-	// if b.HabitTwo != nil {
-	// 	return nil, fmt.Errorf("battle with this code already has two participants")
-	// }
-	// b.HabitTwo = h
-	// s.battleAssociations[h] = append(s.battleAssociations[h], b)
-	// fmt.Println(s.battleAssociations)
-	// return &habitpb.BattleResponse{
-	// 	Battle:  b,
-	// 	Ok:      true,
-	// 	Message: "battle has begun!",
-	// }, nil
 }
 
 func (s *HabitService) GetBattleAssociations(ctx context.Context, req *habitpb.BattleAssociationsRequest) (*habitpb.BattleAssociationsResponse, error) {
+	username := habit.Username(req.GetUsername())
+	habitID := habit.HabitID(req.GetHabitID())
+	resp := s.LocalTracker.GetBattleAssociations(username, habitID)
+	var codes []string
+	for _, v := range resp {
+		codes = append(codes, string(v))
+	}
 	return &habitpb.BattleAssociationsResponse{
-		Codes: []string{},
+		Codes: codes,
 	}, nil
-	// hreq := &habitpb.GetHabitRequest{
-	// 	Habitname: req.GetHabit().GetHabitName(),
-	// 	Username: req.GetHabit().GetUser(),
-	// }
-	// h, err := s.GetHabit(ctx, hreq)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return &habitpb.BattleAssociationsResponse{
-	// 	Habit: h.Habit,
-	// 	Battle: s.battleAssociations[h.Habit],
-	// }, nil
 }
-

@@ -9,34 +9,27 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestCanRetriveAHabitPerformedThreeTimes(t *testing.T) {
+func TestCanRetriveAStoredHabit(t *testing.T) {
 	t.Parallel()
 	path := "localhost:9000"
 
-	username := habit.Username("username")
-	habitID := habit.HabitID("habit")
-
-	store, err := dynamodbstore.Open(path, t.Name())
-	if err != nil {
-		t.Fatalf("Open incorrectly errored: %t", err)
-	}
-	habit.Now = aWhileAgo
-	store.PerformHabit(username, habitID)
-	habit.Now = monday
-	store.PerformHabit(username, habitID)
-	habit.Now = tuesday
-	store.PerformHabit(username, habitID)
-	habit.Now = wednesday
-	store.PerformHabit(username, habitID)
+	username := habit.Username("henryford")
+	habitID := habit.HabitID(t.Name())
+	store := dynamodbstore.Open(path, t.Name())
 	want := &habit.Habit{
-		HabitName:     "habit",
-		Username:      "username",
-		LastPerformed: wednesday(),
-		Streak:        3,
+		HabitName: t.Name(),
+		Username: "henryford",
+		Streak: 11,
+		LastPerformed: aWhileAgo(),
+	}
+	
+	err := store.UpdateHabit(want)
+	if err != nil {
+		t.Fatalf("failed to update a habit: %v", err)
 	}
 	got, err := store.GetHabit(username, habitID)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("failed to get habit: %v", err)
 	}
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
@@ -49,34 +42,88 @@ func TestCanRetrieveAllHabits(t *testing.T) {
 
 	username := habit.Username("username")
 
-	store, err := dynamodbstore.Open(path, t.Name())
+	store := dynamodbstore.Open(path, t.Name())
+	tracker := habit.NewTracker(store)
 
-	if err != nil {
-		t.Fatalf("Open incorrectly errored: %t", err)
-	}
-	store.PerformHabit(username, habit.HabitID("habit1"))
-	store.PerformHabit(username, habit.HabitID("habit2"))
-	store.PerformHabit(username, habit.HabitID("habit3"))
+	tracker.PerformHabit(username, habit.HabitID("habit1"))
+	tracker.PerformHabit(username, habit.HabitID("habit2"))
+	tracker.PerformHabit(username, habit.HabitID("habit3"))
 
 	want := []string{"habit1", "habit2", "habit3"}
-	got := store.ListHabits(username)
+	got := tracker.DisplayHabits(username)
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
 }
 
+func TestCanRetriveAStoredBattle(t *testing.T) {
+	t.Parallel()
+	path := "localhost:9000"
+	store := dynamodbstore.Open(path, t.Name())
+	code := habit.BattleCode("BATTL")
+
+	h := &habit.Habit{
+		HabitName: t.Name(),
+		Username: "greg",
+		Streak: 11,
+		LastPerformed: aWhileAgo(),
+	}
+
+	want := habit.CreateChallenge(h, code)
+
+	
+	err := store.UpdateBattle(want)
+	if err != nil {
+		t.Fatalf("failed to update battle: %v", err)
+	}
+	got, err := store.GetBattle(code)
+	if err != nil {
+		t.Fatalf("failed to get battle: %v", err)
+	}
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+func TestCanRetrieveAllBattlesFromOneUser(t *testing.T) {
+	t.Parallel()
+	path := "localhost:9000"
+
+	username1 := habit.Username("user1")
+	username2 := habit.Username("user2")
+
+	store := dynamodbstore.Open(path, t.Name())
+	tracker := habit.NewTracker(store)
+
+	tracker.PerformHabit(username1, habit.HabitID("habit1"))
+	tracker.PerformHabit(username1, habit.HabitID("habit2"))
+	tracker.PerformHabit(username2, habit.HabitID("habit3"))
+
+	_, _, err := tracker.RegisterBattle("", username1, habit.HabitID("habitthefirst"))
+	if err != nil {
+		t.Fatalf("unable to register battle: %v", err)
+	}
+	_, _, err = tracker.RegisterBattle("", username1, habit.HabitID("habitthesecond"))
+	if err != nil {
+		t.Fatalf("unable to register battle: %v", err)
+	}
+	_, _, err = tracker.RegisterBattle(habit.BattleCode(""), username2, habit.HabitID("habit3"))
+	if err != nil {
+		t.Fatalf("unable to register battle: %v", err)
+	}
+
+	want := 2
+	got, err := store.ListBattlesByUser(username1)
+	if err != nil {
+		t.Fatalf("failed to list battles: %v", err)
+
+	}
+	if !cmp.Equal(want, len(got)) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
+
 func aWhileAgo() time.Time {
 	return time.Date(2000, time.April, 23, 0, 0, 0, 0, time.UTC)
-}
-
-func monday() time.Time {
-	return time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC)
-}
-
-func tuesday() time.Time {
-	return time.Date(2020, time.April, 24, 0, 0, 0, 0, time.UTC)
-}
-
-func wednesday() time.Time {
-	return time.Date(2020, time.April, 25, 0, 0, 0, 0, time.UTC)
 }

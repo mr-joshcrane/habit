@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HabitServiceClient interface {
 	PerformHabit(ctx context.Context, in *PerformHabitRequest, opts ...grpc.CallOption) (*PerformHabitResponse, error)
-	ListHabits(ctx context.Context, in *ListHabitsRequest, opts ...grpc.CallOption) (*ListHabitsResponse, error)
+	DisplayHabits(ctx context.Context, in *ListHabitsRequest, opts ...grpc.CallOption) (*ListHabitsResponse, error)
 	RegisterBattle(ctx context.Context, in *BattleRequest, opts ...grpc.CallOption) (*BattleResponse, error)
 	GetBattleAssociations(ctx context.Context, in *BattleAssociationsRequest, opts ...grpc.CallOption) (*BattleAssociationsResponse, error)
 }
@@ -45,9 +45,9 @@ func (c *habitServiceClient) PerformHabit(ctx context.Context, in *PerformHabitR
 	return out, nil
 }
 
-func (c *habitServiceClient) ListHabits(ctx context.Context, in *ListHabitsRequest, opts ...grpc.CallOption) (*ListHabitsResponse, error) {
+func (c *habitServiceClient) DisplayHabits(ctx context.Context, in *ListHabitsRequest, opts ...grpc.CallOption) (*ListHabitsResponse, error) {
 	out := new(ListHabitsResponse)
-	err := c.cc.Invoke(ctx, "/HabitService/ListHabits", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/HabitService/DisplayHabits", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (c *habitServiceClient) GetBattleAssociations(ctx context.Context, in *Batt
 // for forward compatibility
 type HabitServiceServer interface {
 	PerformHabit(context.Context, *PerformHabitRequest) (*PerformHabitResponse, error)
-	ListHabits(context.Context, *ListHabitsRequest) (*ListHabitsResponse, error)
+	DisplayHabits(context.Context, *ListHabitsRequest) (*ListHabitsResponse, error)
 	RegisterBattle(context.Context, *BattleRequest) (*BattleResponse, error)
 	GetBattleAssociations(context.Context, *BattleAssociationsRequest) (*BattleAssociationsResponse, error)
 	mustEmbedUnimplementedHabitServiceServer()
@@ -90,8 +90,8 @@ type UnimplementedHabitServiceServer struct {
 func (UnimplementedHabitServiceServer) PerformHabit(context.Context, *PerformHabitRequest) (*PerformHabitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PerformHabit not implemented")
 }
-func (UnimplementedHabitServiceServer) ListHabits(context.Context, *ListHabitsRequest) (*ListHabitsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListHabits not implemented")
+func (UnimplementedHabitServiceServer) DisplayHabits(context.Context, *ListHabitsRequest) (*ListHabitsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DisplayHabits not implemented")
 }
 func (UnimplementedHabitServiceServer) RegisterBattle(context.Context, *BattleRequest) (*BattleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterBattle not implemented")
@@ -130,20 +130,20 @@ func _HabitService_PerformHabit_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HabitService_ListHabits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _HabitService_DisplayHabits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListHabitsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HabitServiceServer).ListHabits(ctx, in)
+		return srv.(HabitServiceServer).DisplayHabits(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/HabitService/ListHabits",
+		FullMethod: "/HabitService/DisplayHabits",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HabitServiceServer).ListHabits(ctx, req.(*ListHabitsRequest))
+		return srv.(HabitServiceServer).DisplayHabits(ctx, req.(*ListHabitsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -196,8 +196,8 @@ var HabitService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HabitService_PerformHabit_Handler,
 		},
 		{
-			MethodName: "ListHabits",
-			Handler:    _HabitService_ListHabits_Handler,
+			MethodName: "DisplayHabits",
+			Handler:    _HabitService_DisplayHabits_Handler,
 		},
 		{
 			MethodName: "RegisterBattle",
