@@ -35,26 +35,31 @@ func (t *LocalTracker) DisplayHabits(username Username) []string {
 	return results
 }
 
-func (t *LocalTracker) RegisterBattle(code BattleCode, username Username, habitID HabitID) (BattleCode, Pending, error) {
+func (t *LocalTracker) RegisterBattle(username Username, habitID HabitID) (BattleCode, error) {
 	h, err := t.Store.GetHabit(Username(username), HabitID(habitID))
 	if err != nil {
-		return "", false, err
+		return "", err
 	}
-	if code == "" {
-		b := CreateChallenge(h, code)
-		t.Store.UpdateBattle(b)
-		return b.Code, true, nil
+	b := CreateChallenge(h)
+	t.Store.UpdateBattle(b)
+	return b.Code, nil
+}
+
+func (t *LocalTracker) JoinBattle(code BattleCode, username Username, habitID HabitID) error {
+	h, err := t.Store.GetHabit(Username(username), HabitID(habitID))
+	if err != nil {
+		return err
 	}
 	b, err := t.Store.GetBattle(code)
 	if err != nil {
-		return "", false, err
+		return err
 	}
 	b, err = JoinBattle(h, b)
 	if err != nil {
-		return "", false, err
+		return err
 	}
 	t.Store.UpdateBattle(b)
-	return b.Code, Pending(b.IsPending()), nil
+	return nil
 }
 
 func (t *LocalTracker) GetBattleAssociations(username Username, habitID HabitID) []BattleCode {

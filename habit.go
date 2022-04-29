@@ -23,16 +23,14 @@ type Store interface {
 type Tracker interface {
 	PerformHabit(Username, HabitID) (int, error)
 	DisplayHabits(Username) []string
-	RegisterBattle(BattleCode, Username, HabitID) (BattleCode, Pending, error)
+	RegisterBattle(Username, HabitID) (BattleCode, error)
+	JoinBattle(BattleCode, Username, HabitID) error
 	GetBattleAssociations(Username, HabitID) []BattleCode
 }
 
 type Username string
 type HabitID string
-type BattleID string
 type BattleCode string
-type Pending bool
-
 type Habit struct {
 	HabitName     string
 	Streak        int
@@ -67,18 +65,11 @@ func (h *Habit) Perform() {
 	h.LastPerformed = t
 }
 
-func CreateChallenge(h *Habit, code BattleCode) *Battle {
-	if code == "" {
-		return &Battle{
-			HabitOne: h,
-			HabitTwo: &Habit{},
-			Code:     BattleCodeGenerator(),
-		}
-	}
+func CreateChallenge(h *Habit) *Battle {
 	return &Battle{
 		HabitOne: h,
 		HabitTwo: &Habit{},
-		Code:     code,
+		Code:     BattleCodeGenerator(),
 	}
 }
 
@@ -127,7 +118,8 @@ func generateBattleCode() BattleCode {
 }
 
 func RunCLI(p Tracker) {
-	challenge := flag.String("c", "none", "Create or join a new challenge")
+	createChallenge := flag.Bool("c", false, "Create a new challenge")
+	joinChallenge := flag.String("j", "", "Join an existing challenge")
 	flag.Parse()
 	args := flag.Args()
 	username, ok := os.LookupEnv("USER")
@@ -161,23 +153,27 @@ func RunCLI(p Tracker) {
 	in := fmt.Sprintf("All your current habits: %s!\n", hList)
 	out, _ := glamour.Render(in, "dark")
 	fmt.Fprint(os.Stdout, out)
-	if *challenge != "none" {
-		code, pending, err := p.RegisterBattle(BattleCode(*challenge), Username(username), HabitID(habitID))
+	if *createChallenge {
+		code, err := p.RegisterBattle(Username(username), HabitID(habitID))
 		if err != nil {
 			out, _ := glamour.Render(err.Error(), "dark")
 			fmt.Fprint(os.Stderr, out)
 			os.Exit(1)
 		}
-		if pending {
-			in = fmt.Sprintf("New challenge initiated, please give the user the following code: %s\n", code)
-			out, _ = glamour.Render(in, "dark")
-			fmt.Fprint(os.Stdout, out)
-		} else {
-			in = fmt.Sprintf("Joined challenge: %s\n", code)
-			out, _ = glamour.Render(in, "dark")
-			fmt.Fprint(os.Stdout, out)
-			fmt.Fprintf(os.Stdout, "Joined challenge: %s\n", code)
+		in = fmt.Sprintf("Created challenge: %s\n", code)
+		out, _ = glamour.Render(in, "dark")
+		fmt.Fprint(os.Stdout, out)
+	}
+	if *joinChallenge != "" {
+		err := p.JoinBattle(BattleCode(*joinChallenge), Username(username), HabitID(habitID))
+		if err != nil {
+			out, _ := glamour.Render(err.Error(), "dark")
+			fmt.Fprint(os.Stderr, out)
+			os.Exit(1)
 		}
+		in = fmt.Sprintf("Joined challenge: %s\n", *joinChallenge)
+		out, _ = glamour.Render(in, "dark")
+		fmt.Fprint(os.Stdout, out)
 	}
 	b := p.GetBattleAssociations(Username(username), HabitID(habitID))
 	in = fmt.Sprintf("Your current battles: %s!\n", b)

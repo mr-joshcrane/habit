@@ -1,6 +1,7 @@
 package dynamodbstore_test
 
 import (
+	"fmt"
 	"habit"
 	"habit/stores/dynamodbstore"
 	"testing"
@@ -69,7 +70,8 @@ func TestCanRetriveAStoredBattle(t *testing.T) {
 		LastPerformed: aWhileAgo(),
 	}
 
-	want := habit.CreateChallenge(h, code)
+	habit.BattleCodeGenerator = func() habit.BattleCode { return code }
+	want := habit.CreateChallenge(h)
 
 	
 	err := store.UpdateBattle(want)
@@ -92,22 +94,24 @@ func TestCanRetrieveAllBattlesFromOneUser(t *testing.T) {
 	username1 := habit.Username("user1")
 	username2 := habit.Username("user2")
 
-	store := dynamodbstore.Open(path, t.Name())
+	tablename := t.Name() + fmt.Sprint(time.Now().UnixMilli())
+
+	store := dynamodbstore.Open(path, tablename)
 	tracker := habit.NewTracker(store)
 
 	tracker.PerformHabit(username1, habit.HabitID("habit1"))
 	tracker.PerformHabit(username1, habit.HabitID("habit2"))
 	tracker.PerformHabit(username2, habit.HabitID("habit3"))
 
-	_, _, err := tracker.RegisterBattle("", username1, habit.HabitID("habitthefirst"))
+	_, err := tracker.RegisterBattle(username1, habit.HabitID("habitthefirst"))
 	if err != nil {
 		t.Fatalf("unable to register battle: %v", err)
 	}
-	_, _, err = tracker.RegisterBattle("", username1, habit.HabitID("habitthesecond"))
+	_, err = tracker.RegisterBattle(username1, habit.HabitID("habitthesecond"))
 	if err != nil {
 		t.Fatalf("unable to register battle: %v", err)
 	}
-	_, _, err = tracker.RegisterBattle(habit.BattleCode(""), username2, habit.HabitID("habit3"))
+	_, err = tracker.RegisterBattle(username2, habit.HabitID("habit3"))
 	if err != nil {
 		t.Fatalf("unable to register battle: %v", err)
 	}

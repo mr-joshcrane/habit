@@ -57,5 +57,6 @@ require (
 	github.com/charmbracelet/glamour v0.5.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	google.golang.org/protobuf v1.27.1 // indirect
 )

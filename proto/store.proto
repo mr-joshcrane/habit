@@ -8,5 +8,6 @@ service HabitService {
     rpc PerformHabit(PerformHabitRequest) returns (PerformHabitResponse) {};
     rpc DisplayHabits(ListHabitsRequest) returns (ListHabitsResponse) {};
     rpc RegisterBattle(BattleRequest) returns (BattleResponse) {};
+    rpc JoinBattle(BattleRequest) returns (BattleResponse) {};
     rpc GetBattleAssociations(BattleAssociationsRequest) returns (BattleAssociationsResponse) {};
 }

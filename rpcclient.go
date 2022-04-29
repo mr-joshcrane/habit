@@ -9,15 +9,15 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	
 )
 
-type gRPCClient struct {
-	conn   *grpc.ClientConn
+type RPCClient struct {
 	client habitpb.HabitServiceClient
 }
 
-func Client() (*gRPCClient, error) {
-	address := "localhost:8080"
+func NewRPCClient(p int) (*RPCClient, error) {
+	address := fmt.Sprintf("localhost:%d", p)
 	insecure := grpc.WithTransportCredentials(insecure.NewCredentials())
 	block := grpc.WithBlock()
 	timeout := grpc.WithTimeout(time.Second * 3)
@@ -30,13 +30,12 @@ func Client() (*gRPCClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &gRPCClient{
-		conn:   conn,
+	return &RPCClient{
 		client: client,
 	}, nil
 }
 
-func (c *gRPCClient) PerformHabit(username Username, habitID HabitID) (int, error) {
+func (c *RPCClient) PerformHabit(username Username, habitID HabitID) (int, error) {
 	req := habitpb.PerformHabitRequest{
 		Username:  string(username),
 		Habitname: string(habitID),
@@ -48,7 +47,7 @@ func (c *gRPCClient) PerformHabit(username Username, habitID HabitID) (int, erro
 	return int(resp.GetStreak()), nil
 }
 
-func (c *gRPCClient) DisplayHabits(username Username) []string {
+func (c *RPCClient) DisplayHabits(username Username) []string {
 	req := habitpb.ListHabitsRequest{
 		Username: string(username),
 	}
@@ -59,20 +58,32 @@ func (c *gRPCClient) DisplayHabits(username Username) []string {
 	return h.Habits
 }
 
-func (c *gRPCClient) RegisterBattle(code BattleCode, username Username, habitID HabitID) (BattleCode, Pending, error) {
+func (c *RPCClient) RegisterBattle(username Username, habitID HabitID) (BattleCode, error) {
 	req := habitpb.BattleRequest{
-		Code:     string(code),
 		HabitID:  string(habitID),
 		Username: string(username),
 	}
 	resp, err := c.client.RegisterBattle(context.TODO(), &req)
 	if err != nil {
-		return BattleCode(""), Pending(false), err
+		return BattleCode(""), err
 	}
-	return BattleCode(resp.GetCode()), Pending(resp.GetPending()), err
+	return BattleCode(resp.GetCode()), err
 }
 
-func (c *gRPCClient) GetBattleAssociations(username Username, habitID HabitID) []BattleCode {
+func (c *RPCClient) JoinBattle(code BattleCode, username Username, habitID HabitID) error {
+	req := habitpb.BattleRequest{
+		Code:     string(code),
+		HabitID:  string(habitID),
+		Username: string(username),
+	}
+	_, err := c.client.RegisterBattle(context.TODO(), &req)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (c *RPCClient) GetBattleAssociations(username Username, habitID HabitID) []BattleCode {
 	req := habitpb.BattleAssociationsRequest{
 		Username: string(username),
 		HabitID:  string(habitID),

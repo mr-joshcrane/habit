@@ -64,7 +64,7 @@ func TestHabitPerformedOnThreeConsecutiveDaysIsStreakOfThree(t *testing.T) {
 		t.Fatal(err)
 	}
 	h, err := s.GetHabit(username, habitID)
-	if err != nil  {
+	if err != nil {
 		t.Fatal("habit should not exist, but it does")
 	}
 
@@ -119,7 +119,7 @@ func TestCreateChallengeWithNoInputReturnsNewCode(t *testing.T) {
 	}
 	habit.BattleCodeGenerator = func() habit.BattleCode { return habit.BattleCode("AAAAA") }
 	want := habit.BattleCode("AAAAA")
-	battle := habit.CreateChallenge(&h1, "")
+	battle := habit.CreateChallenge(&h1)
 	got := battle.Code
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
@@ -134,8 +134,9 @@ func TestCreateChallengeWithCodeReturnsCode(t *testing.T) {
 		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
 		Username:      "test",
 	}
+	habit.BattleCodeGenerator = func() habit.BattleCode { return habit.BattleCode("ZINGO") }
 	want := habit.BattleCode("ZINGO")
-	battle := habit.CreateChallenge(&h1, "ZINGO")
+	battle := habit.CreateChallenge(&h1)
 	got := battle.Code
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
@@ -199,7 +200,7 @@ func TestJoinBattleFailsIfAlreadyEnrolled(t *testing.T) {
 		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
 		Username:      "test",
 	}
-	battle := habit.CreateChallenge(&h1, "ZINGO")
+	battle := habit.CreateChallenge(&h1)
 	_, err := habit.JoinBattle(&h1, battle)
 	if err == nil {
 		t.Fatal("expected to fail but did not")
@@ -226,7 +227,7 @@ func TestJoinBattleFailsIfBattleIsFull(t *testing.T) {
 		LastPerformed: time.Date(2020, time.April, 23, 0, 0, 0, 0, time.UTC),
 		Username:      "test three",
 	}
-	battle := habit.CreateChallenge(&h1, "ZINGO")
+	battle := habit.CreateChallenge(&h1)
 	_, err := habit.JoinBattle(&h2, battle)
 	if err != nil {
 		t.Fatalf("did not expect second habit to fail to join challenge")

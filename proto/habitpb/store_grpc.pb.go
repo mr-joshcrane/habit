@@ -25,6 +25,7 @@ type HabitServiceClient interface {
 	PerformHabit(ctx context.Context, in *PerformHabitRequest, opts ...grpc.CallOption) (*PerformHabitResponse, error)
 	DisplayHabits(ctx context.Context, in *ListHabitsRequest, opts ...grpc.CallOption) (*ListHabitsResponse, error)
 	RegisterBattle(ctx context.Context, in *BattleRequest, opts ...grpc.CallOption) (*BattleResponse, error)
+	JoinBattle(ctx context.Context, in *BattleRequest, opts ...grpc.CallOption) (*BattleResponse, error)
 	GetBattleAssociations(ctx context.Context, in *BattleAssociationsRequest, opts ...grpc.CallOption) (*BattleAssociationsResponse, error)
 }
 
@@ -63,6 +64,15 @@ func (c *habitServiceClient) RegisterBattle(ctx context.Context, in *BattleReque
 	return out, nil
 }
 
+func (c *habitServiceClient) JoinBattle(ctx context.Context, in *BattleRequest, opts ...grpc.CallOption) (*BattleResponse, error) {
+	out := new(BattleResponse)
+	err := c.cc.Invoke(ctx, "/HabitService/JoinBattle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *habitServiceClient) GetBattleAssociations(ctx context.Context, in *BattleAssociationsRequest, opts ...grpc.CallOption) (*BattleAssociationsResponse, error) {
 	out := new(BattleAssociationsResponse)
 	err := c.cc.Invoke(ctx, "/HabitService/GetBattleAssociations", in, out, opts...)
@@ -79,6 +89,7 @@ type HabitServiceServer interface {
 	PerformHabit(context.Context, *PerformHabitRequest) (*PerformHabitResponse, error)
 	DisplayHabits(context.Context, *ListHabitsRequest) (*ListHabitsResponse, error)
 	RegisterBattle(context.Context, *BattleRequest) (*BattleResponse, error)
+	JoinBattle(context.Context, *BattleRequest) (*BattleResponse, error)
 	GetBattleAssociations(context.Context, *BattleAssociationsRequest) (*BattleAssociationsResponse, error)
 	mustEmbedUnimplementedHabitServiceServer()
 }
@@ -95,6 +106,9 @@ func (UnimplementedHabitServiceServer) DisplayHabits(context.Context, *ListHabit
 }
 func (UnimplementedHabitServiceServer) RegisterBattle(context.Context, *BattleRequest) (*BattleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterBattle not implemented")
+}
+func (UnimplementedHabitServiceServer) JoinBattle(context.Context, *BattleRequest) (*BattleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method JoinBattle not implemented")
 }
 func (UnimplementedHabitServiceServer) GetBattleAssociations(context.Context, *BattleAssociationsRequest) (*BattleAssociationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBattleAssociations not implemented")
@@ -166,6 +180,24 @@ func _HabitService_RegisterBattle_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HabitService_JoinBattle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BattleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HabitServiceServer).JoinBattle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/HabitService/JoinBattle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HabitServiceServer).JoinBattle(ctx, req.(*BattleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HabitService_GetBattleAssociations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BattleAssociationsRequest)
 	if err := dec(in); err != nil {
@@ -202,6 +234,10 @@ var HabitService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterBattle",
 			Handler:    _HabitService_RegisterBattle_Handler,
+		},
+		{
+			MethodName: "JoinBattle",
+			Handler:    _HabitService_JoinBattle_Handler,
 		},
 		{
 			MethodName: "GetBattleAssociations",
