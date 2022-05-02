@@ -18,7 +18,6 @@ type Server struct {
 }
 
 func NewServer(tracker Tracker) (*Server, error) {
-	fmt.Println("Starting server")
 	port, err := freeport.GetFreePort()
 	if err != nil {
 		log.Fatal(err)
