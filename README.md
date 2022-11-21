@@ -1,7 +1,7 @@
 ## Example Import
 
 ```golang
-import "github.com/mr-joshcrane/habit_tracker"
+import "github.com/mr-joshcrane/habit"
 ```
 
 ## Example of Library Usage
