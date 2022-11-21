@@ -3,7 +3,7 @@ package dynamodbstore
 import (
 	"context"
 	"fmt"
-	"habit"
+	"github.com/mr-joshcrane/habit"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"

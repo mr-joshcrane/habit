@@ -3,7 +3,7 @@ package habit
 import (
 	"context"
 	"fmt"
-	"habit/proto/habitpb"
+	"github.com/mr-joshcrane/habit/proto/habitpb"
 	"log"
 	"time"
 

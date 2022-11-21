@@ -1,8 +1,8 @@
 package habit_test
 
 import (
-	"habit"
-	"habit/stores/pbfilestore"
+	"github.com/mr-joshcrane/habit"
+	"github.com/mr-joshcrane/habit/stores/pbfilestore"
 	"testing"
 	"time"
 

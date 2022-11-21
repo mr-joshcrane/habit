@@ -1,12 +1,12 @@
 package pbfilestore
 
 import (
-	"fmt"
-	"habit"
-	"habit/proto/habitpb"
 	"io"
 	"os"
 	"time"
+
+	"github.com/mr-joshcrane/habit"
+	"github.com/mr-joshcrane/habit/proto/habitpb"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -77,9 +77,9 @@ func (s *PBFileStore) GetHabit(username habit.Username, HabitID habit.HabitID) (
 		return h, nil
 	}
 	h = &habit.Habit{
-		Username: string(username),
+		Username:  string(username),
 		HabitName: string(HabitID),
-		Streak: 1,
+		Streak:    1,
 	}
 	return h, nil
 }
@@ -90,10 +90,8 @@ func (s *PBFileStore) UpdateHabit(h *habit.Habit) error {
 }
 
 func (s *PBFileStore) ListHabits(username habit.Username) ([]*habit.Habit, error) {
-	fmt.Println(s.data)
 	habits := []*habit.Habit{}
 	for _, v := range s.data {
-		fmt.Println(v)
 		habits = append(habits, v)
 	}
 	return habits, nil

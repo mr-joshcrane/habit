@@ -2,8 +2,8 @@ package dynamodbstore_test
 
 import (
 	"fmt"
-	"habit"
-	"habit/stores/dynamodbstore"
+	"github.com/mr-joshcrane/habit"
+	"github.com/mr-joshcrane/habit/stores/dynamodbstore"
 	"testing"
 	"time"
 
